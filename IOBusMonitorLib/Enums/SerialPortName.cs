@@ -1,0 +1,60 @@
+﻿namespace IOBusMonitorLib
+{
+    /// <summary>
+    /// Enumeration of COM-port names (COM1 … COM50) used in the application’s
+    /// settings and UI. Values correspond to the numeric suffix of the port.
+    /// </summary>
+    public enum SerialPortName : int
+    {
+        COM1 = 1,
+        COM2 = 2,
+        COM3 = 3,
+        COM4 = 4,
+        COM5 = 5,
+        COM6 = 6,
+        COM7 = 7,
+        COM8 = 8,
+        COM9 = 9,
+        COM10 = 10,
+        COM11 = 11,
+        COM12 = 12,
+        COM13 = 13,
+        COM14 = 14,
+        COM15 = 15,
+        COM16 = 16,
+        COM17 = 17,
+        COM18 = 18,
+        COM19 = 19,
+        COM20 = 20,
+        COM21 = 21,
+        COM22 = 22,
+        COM23 = 23,
+        COM24 = 24,
+        COM25 = 25,
+        COM26 = 26,
+        COM27 = 27,
+        COM28 = 28,
+        COM29 = 29,
+        COM30 = 30,
+        COM31 = 31,
+        COM32 = 32,
+        COM33 = 33,
+        COM34 = 34,
+        COM35 = 35,
+        COM36 = 36,
+        COM37 = 37,
+        COM38 = 38,
+        COM39 = 39,
+        COM40 = 40,
+        COM41 = 41,
+        COM42 = 42,
+        COM43 = 43,
+        COM44 = 44,
+        COM45 = 45,
+        COM46 = 46,
+        COM47 = 47,
+        COM48 = 48,
+        COM49 = 49,
+        COM50 = 50
+    }
+}

@@ -1,0 +1,238 @@
+﻿<Page x:Class="IOBusMonitor.DashboardPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:hc="https://handyorg.github.io/handycontrol"
+      Background="White">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="10">
+
+            <!-- 🟦 MODBUS TCP -->
+            <Expander Header="> Modbus TCP" IsExpanded="True">
+                <ItemsControl ItemsSource="{Binding ModbusTCPPoints}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="LightGray"
+                                    BorderThickness="1"
+                                    Padding="10"
+                                    Margin="5">
+                                <DockPanel>
+
+                                    <!-- Device + point label -->
+                                    <StackPanel DockPanel.Dock="Left" Margin="5">
+                                        <TextBlock Text="{Binding DeviceName}"
+                                                   FontSize="16"
+                                                   FontWeight="Bold"/>
+                                        <TextBlock Text="{Binding PointName}"
+                                                   FontSize="14"
+                                                   Foreground="Gray"/>
+
+                                        <!-- Show all measurements button -->
+                                        <Button Command="{Binding ShowAllMeasurementsCommand}"
+                                                Width="80"
+                                                Height="60"
+                                                Margin="0,10,10,10"
+                                                ToolTip="Show all measurements">
+                                            <TextBlock Text="📊"
+                                                       FontSize="36"
+                                                       Foreground="CadetBlue"
+                                                       VerticalAlignment="Center"
+                                                       HorizontalAlignment="Center"/>
+                                        </Button>
+                                    </StackPanel>
+
+                                    <!-- Measurements list -->
+                                    <ItemsControl DockPanel.Dock="Left"
+                                                  ItemsSource="{Binding Measurements}"
+                                                  Margin="10,0">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="2">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="120"/>
+                                                        <ColumnDefinition Width="80"/>
+                                                        <ColumnDefinition Width="60"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="40"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <TextBlock Grid.Column="0"
+                                                               Text="{Binding Name}"
+                                                               FontWeight="SemiBold"/>
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding ValueStr}"/>
+                                                    <TextBlock Grid.Column="2"
+                                                               Text="{Binding Unit}"/>
+                                                    <TextBlock Grid.Column="3"
+                                                               Text="{Binding Timestamp, StringFormat='dd.MM.yyyy HH:mm:ss'}"
+                                                               FontSize="12"
+                                                               Foreground="Gray"/>
+
+                                                    <!-- Chart button -->
+                                                    <Button Grid.Column="4"
+                                                            Width="50"
+                                                            Height="40"
+                                                            ToolTip="Show chart"
+                                                            Background="CadetBlue"
+                                                            BorderThickness="0"
+                                                            Command="{Binding ShowGraphCommand}">
+                                                        <TextBlock Text="📈"
+                                                                   FontSize="16"
+                                                                   Foreground="White"/>
+                                                    </Button>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                </DockPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Expander>
+
+            <!-- 🟧 MODBUS RTU -->
+            <Expander Header="> Modbus RTU" IsExpanded="True">
+                <ItemsControl ItemsSource="{Binding ModbusRTUPoints}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <!-- presne rovnaká štruktúra ako vyššie -->
+                            <Border BorderBrush="LightGray"
+                                    BorderThickness="1"
+                                    Padding="10"
+                                    Margin="5">
+                                <DockPanel>
+                                    <!-- ľavý blok -->
+                                    <StackPanel DockPanel.Dock="Left" Margin="5">
+                                        <TextBlock Text="{Binding DeviceName}"
+                                                   FontSize="16"
+                                                   FontWeight="Bold"/>
+                                        <TextBlock Text="{Binding PointName}"
+                                                   FontSize="14"
+                                                   Foreground="Gray"/>
+                                        <Button Command="{Binding ShowAllMeasurementsCommand}"
+                                                Width="80"
+                                                Height="60"
+                                                Margin="0,10,10,10"
+                                                ToolTip="Show all measurements">
+                                            <TextBlock Text="📊"
+                                                       FontSize="36"
+                                                       Foreground="CadetBlue"
+                                                       VerticalAlignment="Center"
+                                                       HorizontalAlignment="Center"/>
+                                        </Button>
+                                    </StackPanel>
+
+                                    <!-- merania -->
+                                    <ItemsControl DockPanel.Dock="Left"
+                                                  ItemsSource="{Binding Measurements}"
+                                                  Margin="10,0">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="2">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="120"/>
+                                                        <ColumnDefinition Width="80"/>
+                                                        <ColumnDefinition Width="60"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="40"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="SemiBold"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding ValueStr}"/>
+                                                    <TextBlock Grid.Column="2" Text="{Binding Unit}"/>
+                                                    <TextBlock Grid.Column="3"
+                                                               Text="{Binding Timestamp, StringFormat='dd.MM.yyyy HH:mm:ss'}"
+                                                               FontSize="12"
+                                                               Foreground="Gray"/>
+                                                    <Button Grid.Column="4"
+                                                            Width="50"
+                                                            Height="40"
+                                                            ToolTip="Show chart"
+                                                            Background="CadetBlue"
+                                                            BorderThickness="0"
+                                                            Command="{Binding ShowGraphCommand}">
+                                                        <TextBlock Text="📈" FontSize="16" Foreground="White"/>
+                                                    </Button>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </DockPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Expander>
+
+            <!-- 🟪 SIEMENS S7 -->
+            <Expander Header="> Siemens S7" IsExpanded="True">
+                <ItemsControl ItemsSource="{Binding SiemensPoints}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <!-- rovnaké rozloženie -->
+                            <Border BorderBrush="LightGray"
+                                    BorderThickness="1"
+                                    Padding="10"
+                                    Margin="5">
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Left" Margin="5">
+                                        <TextBlock Text="{Binding DeviceName}" FontSize="16" FontWeight="Bold"/>
+                                        <TextBlock Text="{Binding PointName}"  FontSize="14" Foreground="Gray"/>
+                                        <Button Command="{Binding ShowAllMeasurementsCommand}"
+                                                Width="80"
+                                                Height="60"
+                                                Margin="0,10,10,10"
+                                                ToolTip="Show all measurements">
+                                            <TextBlock Text="📊"
+                                                       FontSize="36"
+                                                       Foreground="CadetBlue"
+                                                       VerticalAlignment="Center"
+                                                       HorizontalAlignment="Center"/>
+                                        </Button>
+                                    </StackPanel>
+
+                                    <ItemsControl DockPanel.Dock="Left"
+                                                  ItemsSource="{Binding Measurements}"
+                                                  Margin="10,0">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="2">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="120"/>
+                                                        <ColumnDefinition Width="80"/>
+                                                        <ColumnDefinition Width="60"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="40"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="SemiBold"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding ValueStr}"/>
+                                                    <TextBlock Grid.Column="2" Text="{Binding Unit}"/>
+                                                    <TextBlock Grid.Column="3"
+                                                               Text="{Binding Timestamp, StringFormat='dd.MM.yyyy HH:mm:ss'}"
+                                                               FontSize="12"
+                                                               Foreground="Gray"/>
+                                                    <Button Grid.Column="4"
+                                                            Width="50"
+                                                            Height="40"
+                                                            ToolTip="Show chart"
+                                                            Background="CadetBlue"
+                                                            BorderThickness="0"
+                                                            Command="{Binding ShowGraphCommand}">
+                                                        <TextBlock Text="📈" FontSize="16" Foreground="White"/>
+                                                    </Button>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </DockPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Expander>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

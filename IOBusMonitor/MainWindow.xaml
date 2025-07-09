@@ -1,0 +1,107 @@
+﻿<Window x:Class="IOBusMonitor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
+        xmlns:local="clr-namespace:IOBusMonitor"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        Title="IOBus Monitor" Height="700" Width="1154" Icon="/Assets/icon.ico">
+
+    <Window.Resources>
+        <local:InverseBoolConverter x:Key="InverseBoolConverter"/>
+        <local:AndConverter         x:Key="AndConverter"/>
+    </Window.Resources>
+
+    <!-- Enable drag-move on empty area -->
+    <Grid MouseLeftButtonDown="Grid_MouseLeftButtonDown" Background="Transparent">
+
+        <!-- System-tray icon -->
+        <hc:NotifyIcon x:Name="notifyIcon"
+                       Icon="/Assets/icon.ico"
+                       Text="IOBus Monitor"
+                       Visibility="Visible">
+            <hc:NotifyIcon.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Show"   Click="ShowMainWindow_Click"/>
+                    <MenuItem Header="▶️ Start" Click="Start_Click"/>
+                    <MenuItem Header="⏹ Stop"  Click="Stop_Click"/>
+                    <Separator/>
+                    <MenuItem Header="❌ Exit"  Click="Exit_Click"/>
+                </ContextMenu>
+            </hc:NotifyIcon.ContextMenu>
+        </hc:NotifyIcon>
+
+        <DockPanel>
+            <StackPanel Orientation="Horizontal" Margin="5" DockPanel.Dock="Top">
+                <TextBlock Text="🖥️ Device Monitoring"
+                           FontSize="22"
+                           FontWeight="Bold"
+                           Margin="5,0,10,0"
+                           Foreground="#FF1D4D9A"
+                           VerticalAlignment="Center"/>
+
+                <Menu FontSize="15" VerticalAlignment="Center">
+
+                    <!-- Measurement -->
+                    <MenuItem Header="⚡ Measurement" FontSize="20" Foreground="#FF004980">
+                        <MenuItem Header="🏠 Live dashboard"
+                                  Command="{Binding ShowDashboardCommand}"
+                                  FontSize="20" Foreground="#FF1976D2"/>
+                        <MenuItem Header="📊 History"
+                                  Command="{Binding ShowHistoryCommand}"
+                                  FontSize="20" Foreground="#FF388E3C"/>
+                    </MenuItem>
+
+                    <!-- Administration -->
+                    <MenuItem Header="🔧 Administration" FontSize="20" Foreground="#FF388E3C">
+                        <MenuItem Header="➡️ Modbus TCP" Foreground="#FF1976D2">
+                            <MenuItem Header="🖥️ Devices" Command="{Binding ShowModbusTCPDevicesCommand}" Foreground="#FF1976D2"/>
+                            <MenuItem Header="📈 Points"  Command="{Binding ShowModbusTCPPointsCommand}"  Foreground="#FF1976D2"/>
+                            <MenuItem Header="📊 Measurements" Command="{Binding ShowModbusTCPMeasurementsCommand}" Foreground="#FF1976D2"/>
+                        </MenuItem>
+                        <MenuItem Header="➡️ Modbus RTU" Foreground="#FFFB8C00">
+                            <MenuItem Header="🖥️ Devices" Command="{Binding ShowModbusRTUDevicesCommand}" Foreground="#FFFB8C00"/>
+                            <MenuItem Header="📈 Points"  Command="{Binding ShowModbusRTUPointsCommand}"  Foreground="#FFFB8C00"/>
+                            <MenuItem Header="📊 Measurements" Command="{Binding ShowModbusRTUMeasurementsCommand}" Foreground="#FFFB8C00"/>
+                        </MenuItem>
+                        <MenuItem Header="➡️ Siemens S7" Foreground="#FF6A1B9A">
+                            <MenuItem Header="🖥️ Devices" Command="{Binding ShowS7DevicesCommand}" Foreground="#FF6A1B9A"/>
+                            <MenuItem Header="📈 Points"  Command="{Binding ShowS7PointsCommand}"  Foreground="#FF6A1B9A"/>
+                            <MenuItem Header="📊 Measurements" Command="{Binding ShowS7MeasurementsCommand}" Foreground="#FF6A1B9A"/>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="⚙️ App settings" Command="{Binding ShowAppSettingsCommand}" Foreground="#FF795548"/>
+                    </MenuItem>
+
+                    <!-- Application -->
+                    <MenuItem Header="⚙️ Application" FontSize="20" Foreground="#FF3F51B5">
+                        <MenuItem Header="🔄 Reset settings" Command="{Binding RestartCommand}" Foreground="#FF3F51B5"/>
+                        <MenuItem Header="ℹ️ About"          Command="{Binding ShowAboutCommand}"  Foreground="#FF3F51B5"/>
+                    </MenuItem>
+
+                    <!-- Spacer -->
+                    <MenuItem Header="" Width="Auto"/>
+
+                    <!-- Start / Stop toggles -->
+                    <MenuItem Header="▶️ Start" FontSize="20" Foreground="#FF4CAF50"
+          Click="Start_Click"
+          IsEnabled="{Binding IsMonitoring, Converter={StaticResource InverseBoolConverter}}"/>
+
+                    <MenuItem Header="⏹ Stop"  FontSize="20" Foreground="#FFF44336"
+          Click="Stop_Click"
+          IsEnabled="{Binding IsMonitoring}"/>
+
+
+                    <MenuItem Header="❌ Close to tray"
+                              Click="MinimizeToTray_Click"
+                              FontSize="20" Foreground="#FF757575"/>
+                </Menu>
+            </StackPanel>
+
+            <!-- Content -->
+            <Frame x:Name="MainContentFrame"
+                   NavigationUIVisibility="Hidden"
+                   BorderBrush="{x:Null}"/>
+        </DockPanel>
+    </Grid>
+</Window>

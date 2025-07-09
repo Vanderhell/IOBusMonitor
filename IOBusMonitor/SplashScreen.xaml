@@ -1,0 +1,24 @@
+﻿<Window x:Class="IOBusMonitor.SplashScreen"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
+        Title="IOBus Monitor"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        Width="400"
+        Height="250">
+
+    <Grid>
+        <!-- Loading spinner -->
+        <hc:LoadingCircle HorizontalAlignment="Center"
+                          VerticalAlignment="Center" DotCount="10" DotDiameter="20" DotInterval="31" Width="150" Height="150"/>
+
+        <!-- Caption -->
+        <TextBlock Text="Loading…"
+                   VerticalAlignment="Bottom"
+                   Margin="0,0,0,20"
+                   FontSize="24"
+                   TextAlignment="Center" FontFamily="Calibri"/>
+    </Grid>
+</Window>

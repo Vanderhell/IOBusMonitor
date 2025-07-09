@@ -1,0 +1,77 @@
+﻿<Window x:Class="IOBusMonitor.GraphWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:oxy="http://oxyplot.org/wpf"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
+        Title="Graph" Height="500" Width="800">
+
+    <DockPanel>
+        <!-- Top bar with live-update toggle -->
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="5">
+            <ToggleButton Content="Live update"
+                          IsChecked="{Binding IsLiveTracking, Mode=TwoWay}"
+                          ToolTip="Enable / disable automatic plot refresh"
+                          Padding="10,5"/>
+        </StackPanel>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200" x:Name="MeasurementListColumn"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Measurement visibility list -->
+            <StackPanel Grid.Column="0" Margin="5" x:Name="MeasurementListPanel">
+                <TextBlock Text="Measurements" FontWeight="Bold" Margin="0,0,0,5"/>
+                <ItemsControl ItemsSource="{Binding Point.Measurements}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <ToggleButton Content="{Binding Name}"
+                                          IsChecked="{Binding IsVisible, Mode=TwoWay}"
+                                          Checked="CheckBox_Checked"
+                                          Unchecked="CheckBox_Checked"
+                                          FontSize="18"
+                                          Padding="8,4"
+                                          Margin="0,4"
+                                          BorderThickness="1"
+                                          HorizontalAlignment="Stretch">
+                                <ToggleButton.Style>
+                                    <Style TargetType="ToggleButton">
+                                        <!-- checked = primary blue -->
+                                        <Setter Property="Background" Value="#FF007ACC"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Setter Property="BorderBrush" Value="#FF007ACC"/>
+                                        <Setter Property="Cursor" Value="Hand"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ToggleButton">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                            CornerRadius="4">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                          VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <!-- unchecked = red -->
+                                        <Style.Triggers>
+                                            <Trigger Property="IsChecked" Value="False">
+                                                <Setter Property="Background" Value="#FFB71C1C"/>
+                                                <Setter Property="BorderBrush" Value="#FFB71C1C"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ToggleButton.Style>
+                            </ToggleButton>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+
+            <!-- Plot -->
+            <oxy:PlotView Grid.Column="1" Model="{Binding PlotModel}" Margin="5"/>
+        </Grid>
+    </DockPanel>
+</Window>
