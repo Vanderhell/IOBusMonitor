@@ -5,6 +5,19 @@ The application is designed to be compiled and run as a single executable withou
 
 ---
 
+# Home
+
+![Live view](Assets/README/home.png)
+
+# Live Dashboard
+
+![Live view](Assets/README/dashboard.png)
+
+# Dashboard - Graph
+
+![Live view](Assets/README/graph.png)
+
+
 ## 1  Overview
 
 | Topic            | Detail |
