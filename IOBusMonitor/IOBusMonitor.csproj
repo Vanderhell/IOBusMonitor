@@ -331,9 +331,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include=".gitignore" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Assets\README\dashboard.png" />
   </ItemGroup>
   <ItemGroup>
