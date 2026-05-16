@@ -6,19 +6,58 @@
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
         ResizeMode="NoResize"
-        Width="400"
-        Height="250">
+        Width="520"
+        Height="320"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False">
 
-    <Grid>
-        <!-- Loading spinner -->
-        <hc:LoadingCircle HorizontalAlignment="Center"
-                          VerticalAlignment="Center" DotCount="10" DotDiameter="20" DotInterval="31" Width="150" Height="150"/>
+    <Border Margin="18"
+            CornerRadius="18"
+            Background="{StaticResource ShellBrush.Nav}"
+            BorderBrush="#223448"
+            BorderThickness="1">
+        <Grid Margin="28">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-        <!-- Caption -->
-        <TextBlock Text="Loading…"
-                   VerticalAlignment="Bottom"
-                   Margin="0,0,0,20"
-                   FontSize="24"
-                   TextAlignment="Center" FontFamily="Calibri"/>
-    </Grid>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="IOBus Monitor"
+                           FontSize="28"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="Preparing shell, settings, and local monitoring services"
+                           Margin="0,8,0,0"
+                           FontSize="13"
+                           Foreground="#B3FFFFFF"
+                           TextAlignment="Center"/>
+
+                <hc:LoadingCircle HorizontalAlignment="Center"
+                                  Margin="0,28,0,0"
+                                  VerticalAlignment="Center"
+                                  DotCount="10"
+                                  DotDiameter="16"
+                                  DotInterval="24"
+                                  Foreground="#FFF4F6F8"
+                                  Width="120"
+                                  Height="120"/>
+            </StackPanel>
+
+            <Border Grid.Row="1"
+                    CornerRadius="10"
+                    Background="#12FFFFFF"
+                    BorderBrush="#24FFFFFF"
+                    BorderThickness="1"
+                    Padding="12">
+                <TextBlock Text="Loading workspace..."
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Foreground="White"
+                           TextAlignment="Center"/>
+            </Border>
+        </Grid>
+    </Border>
 </Window>
