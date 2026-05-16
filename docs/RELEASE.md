@@ -39,6 +39,15 @@ This creates `dist/IOBusMonitor-<version>-win-x64.zip.sha256` beside the ZIP.
 
 This additionally copies local `Settings`, `Data`, and `Logs` folders into the staged package if they exist. Use this only when intentionally distributing a pre-seeded demo build.
 
+## GitHub Release workflow
+
+The automated release flow lives in [`.github/workflows/release.yml`](../.github/workflows/release.yml).
+
+- Push a tag such as `v1.0.0`
+- GitHub Actions restores packages, builds `Release|x64`, and runs `build/package-release.ps1 -GenerateChecksum`
+- The workflow creates a GitHub Release and uploads the ZIP plus SHA-256 file
+- You can also run the workflow manually from the Actions tab with `workflow_dispatch`
+
 ## Package contents
 
 Expected package root:
