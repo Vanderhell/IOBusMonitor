@@ -10,12 +10,8 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <StackPanel>
-            <TextBlock Text="Application Settings" Style="{StaticResource ShellPageTitleStyle}"/>
-            <TextBlock Text="Configure polling interval, startup behavior, demo mode, and archive storage path."
-                       Margin="0,6,0,0"
-                       Style="{StaticResource ShellPageSubtitleStyle}"/>
-        </StackPanel>
+        <TextBlock Text="Configure polling interval, startup behavior, demo mode, and archive storage path."
+                   Style="{StaticResource ShellPageSubtitleStyle}"/>
 
         <Border Grid.Row="1"
                 Margin="0,16,0,0"

@@ -9,38 +9,40 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0"
-                Style="{StaticResource ShellPanelCardStyle}"
-                Margin="0,0,0,14">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2.2*"/>
-                    <ColumnDefinition Width="1.1*"/>
-                    <ColumnDefinition Width="1.1*"/>
-                </Grid.ColumnDefinitions>
+        <StackPanel Grid.Row="0">
+            <Border Style="{StaticResource ShellPanelCardStyle}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2.2*"/>
+                        <ColumnDefinition Width="1.1*"/>
+                        <ColumnDefinition Width="1.1*"/>
+                    </Grid.ColumnDefinitions>
 
-                <TextBox Grid.Column="0"
-                         Margin="0,0,12,0"
-                         Padding="10,8"
-                         FontSize="13"
-                         VerticalContentAlignment="Center"
-                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                         ToolTip="Search device, point, measurement, protocol, status, or error"/>
+                    <TextBox Grid.Column="0"
+                             Style="{StaticResource ShellTextBoxStyle}"
+                             Margin="0,0,12,0"
+                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                             ToolTip="Search device, point, measurement, protocol, status, or error"/>
 
-                <ComboBox Grid.Column="1"
-                          Margin="0,0,12,0"
-                          Padding="8,6"
-                          FontSize="13"
-                          ItemsSource="{Binding ProtocolFilters}"
-                          SelectedItem="{Binding SelectedProtocolFilter}"/>
+                    <ComboBox Grid.Column="1"
+                              Style="{StaticResource ShellComboBoxStyle}"
+                              Margin="0,0,12,0"
+                              ItemsSource="{Binding ProtocolFilters}"
+                              SelectedItem="{Binding SelectedProtocolFilter}"/>
 
-                <ComboBox Grid.Column="2"
-                          Padding="8,6"
-                          FontSize="13"
-                          ItemsSource="{Binding StatusFilters}"
-                          SelectedItem="{Binding SelectedStatusFilter}"/>
-            </Grid>
-        </Border>
+                    <ComboBox Grid.Column="2"
+                              Style="{StaticResource ShellComboBoxStyle}"
+                              ItemsSource="{Binding StatusFilters}"
+                              SelectedItem="{Binding SelectedStatusFilter}"/>
+                </Grid>
+            </Border>
+
+            <Border Margin="0,14,0,14"
+                    Style="{StaticResource ShellNoticeCardStyle}">
+                <TextBlock Text="Legend: Protocol shows the communication type, Value is the current sensor reading, Unit is the measurement unit, and Status shows whether the point is healthy or in error."
+                           Style="{StaticResource ShellPageSubtitleStyle}"/>
+            </Border>
+        </StackPanel>
 
         <Grid Grid.Row="1">
             <DataGrid ItemsSource="{Binding FilteredRows}"

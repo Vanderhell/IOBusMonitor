@@ -24,12 +24,8 @@
                 Padding="16"
                 Margin="0,0,0,16">
             <DockPanel LastChildFill="False">
-                <StackPanel DockPanel.Dock="Left">
-                    <TextBlock Text="Point Trend" Style="{StaticResource ShellPageTitleStyle}"/>
-                    <TextBlock Text="Toggle measurement visibility and keep the plot live while values continue to arrive."
-                               Margin="0,4,0,0"
-                               Style="{StaticResource ShellPageSubtitleStyle}"/>
-                </StackPanel>
+                <TextBlock Text="Toggle measurement visibility and keep the plot live while values continue to arrive."
+                           Style="{StaticResource ShellPageSubtitleStyle}"/>
 
                 <ToggleButton DockPanel.Dock="Right"
                               Content="Live Update"

@@ -8,36 +8,99 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel>
-            <TextBlock Text="Welcome" Style="{StaticResource ShellPageTitleStyle}"/>
-            <TextBlock Text="Use the left navigation to open the dashboard, history, or configuration pages. Enable demo mode if you want to explore the workflow without PLC hardware."
-                       Margin="0,6,0,0"
-                       Style="{StaticResource ShellPageSubtitleStyle}"/>
-        </StackPanel>
+        <TextBlock Text="Use the left navigation to open the dashboard, history, or configuration pages. Enable demo mode if you want to explore the workflow without PLC hardware."
+                   Style="{StaticResource ShellPageSubtitleStyle}"/>
 
-        <Border Grid.Row="1"
+        <Grid Grid.Row="1" Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.15*"/>
+                <ColumnDefinition Width="1.85*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0"
+                    Margin="0,0,16,0"
+                    Style="{StaticResource ShellPanelCardStyle}">
+                <StackPanel>
+                    <TextBlock Text="What this app does"
+                               Style="{StaticResource ShellSectionHeadingStyle}"/>
+                    <TextBlock Text="IOBus Monitor is a local industrial monitoring shell for reading live values, reviewing archived samples, and managing device models without turning the tool into a full SCADA system."
+                               Margin="0,8,0,0"
+                               Style="{StaticResource ShellPageSubtitleStyle}"/>
+
+                    <TextBlock Text="Supported protocols"
+                               Margin="0,20,0,0"
+                               Style="{StaticResource ShellLabelStyle}"/>
+                    <TextBlock Text="• Modbus TCP for Ethernet-connected field devices."
+                               Margin="0,8,0,0"
+                               Style="{StaticResource ShellPageSubtitleStyle}"/>
+                    <TextBlock Text="• Modbus RTU for serial bus devices and gateways."
+                               Margin="0,6,0,0"
+                               Style="{StaticResource ShellPageSubtitleStyle}"/>
+                    <TextBlock Text="• Siemens S7 for PLC endpoints, rack/slot setups, and industrial automation projects."
+                               Margin="0,6,0,0"
+                               Style="{StaticResource ShellPageSubtitleStyle}"/>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="1"
+                    Style="{StaticResource ShellPanelCardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel>
+                        <TextBlock Text="Typical workflow"
+                                   Style="{StaticResource ShellSectionHeadingStyle}"/>
+                        <TextBlock Text="Start with a device, then define points and measurements, and finally watch the live values or open the history chart."
+                                   Margin="0,8,0,0"
+                                   Style="{StaticResource ShellPageSubtitleStyle}"/>
+                    </StackPanel>
+
+                    <Border Grid.Row="1"
+                            Margin="0,18,0,0"
+                            Style="{StaticResource ShellNoticeCardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="1. Configure or enable demo mode."
+                                       Style="{StaticResource ShellLabelStyle}"/>
+                            <TextBlock Text="2. Open Dashboard for live values and status."
+                                       Margin="0,6,0,0"
+                                       Style="{StaticResource ShellPageSubtitleStyle}"/>
+                            <TextBlock Text="3. Use History for archived SQLite trend review."
+                                       Margin="0,6,0,0"
+                                       Style="{StaticResource ShellPageSubtitleStyle}"/>
+                            <TextBlock Text="4. Use Settings to adjust polling and storage."
+                                       Margin="0,6,0,0"
+                                       Style="{StaticResource ShellPageSubtitleStyle}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="2"
+                            Margin="0,18,0,0"
+                            Style="{StaticResource ShellCardStyle}"
+                            Padding="14">
+                        <StackPanel>
+                            <TextBlock Text="Designed for"
+                                       Style="{StaticResource ShellLabelStyle}"/>
+                            <TextBlock Text="Technicians, integrators, and support engineers who need a clean Windows tool for field-bus monitoring, short-term logging, and quick troubleshooting."
+                                       Margin="0,6,0,0"
+                                       Style="{StaticResource ShellPageSubtitleStyle}"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Border Grid.Row="2"
                 Margin="0,16,0,0"
-                Style="{StaticResource ShellCardStyle}"
-                Padding="18">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-
-                <TextBlock Text="Workspace Overview"
-                           FontSize="18"
-                           FontWeight="SemiBold"/>
-
-                <Image Grid.Row="1"
-                       Margin="0,16,0,0"
-                       Source="/Assets/home.png"
-                       Stretch="Uniform"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"/>
-            </Grid>
+                Style="{StaticResource ShellNoticeCardStyle}">
+            <TextBlock Text="Demo mode seeds sample data locally. It does not perform real network or serial polling while enabled."
+                       Style="{StaticResource ShellPageSubtitleStyle}"/>
         </Border>
     </Grid>
 </Page>

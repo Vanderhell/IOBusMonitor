@@ -12,20 +12,24 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <DockPanel LastChildFill="False">
-            <StackPanel DockPanel.Dock="Left">
-                <TextBlock Text="Siemens S7 Devices" Style="{StaticResource ShellPageTitleStyle}"/>
+        <StackPanel>
+            <DockPanel LastChildFill="False">
                 <TextBlock Text="Manage PLC endpoints, rack/slot settings, and CPU selection used by S7 polling."
-                           Margin="0,6,0,0"
                            Style="{StaticResource ShellPageSubtitleStyle}"/>
-            </StackPanel>
 
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button Content="Test Connection" Click="btnTestConnection_Click" Width="140" Style="{StaticResource ShellPositiveButtonStyle}"/>
-                <Button Content="Add" Click="plusActivity_Click" Width="72" Style="{StaticResource ShellActionButtonStyle}"/>
-                <Button Content="Remove" Click="minusActivity_Click" Width="88" Style="{StaticResource ShellDangerButtonStyle}"/>
-            </StackPanel>
-        </DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="Test Connection" Click="btnTestConnection_Click" Width="140" Style="{StaticResource ShellPositiveButtonStyle}"/>
+                    <Button Content="Add" Click="plusActivity_Click" Width="72" Style="{StaticResource ShellActionButtonStyle}"/>
+                    <Button Content="Remove" Click="minusActivity_Click" Width="88" Style="{StaticResource ShellDangerButtonStyle}"/>
+                </StackPanel>
+            </DockPanel>
+
+            <Border Margin="0,14,0,0"
+                    Style="{StaticResource ShellNoticeCardStyle}">
+                <TextBlock Text="Legend: Name is the PLC label, Active enables polling, and the point link groups measurements under that PLC."
+                           Style="{StaticResource ShellPageSubtitleStyle}"/>
+            </Border>
+        </StackPanel>
 
         <Border Grid.Row="1"
                 Margin="0,16,0,16"

@@ -12,20 +12,24 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <DockPanel LastChildFill="False">
-            <StackPanel DockPanel.Dock="Left">
-                <TextBlock Text="Modbus TCP Devices" Style="{StaticResource ShellPageTitleStyle}"/>
+        <StackPanel>
+            <DockPanel LastChildFill="False">
                 <TextBlock Text="Manage TCP endpoints used by the monitoring and history workflow."
-                           Margin="0,6,0,0"
                            Style="{StaticResource ShellPageSubtitleStyle}"/>
-            </StackPanel>
 
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button Content="Test Connection" Click="btnTestConnection_Click" Width="140" Style="{StaticResource ShellPositiveButtonStyle}"/>
-                <Button Content="Add" Click="plusActivity_Click" Width="72" Style="{StaticResource ShellActionButtonStyle}"/>
-                <Button Content="Remove" Click="minusActivity_Click" Width="88" Style="{StaticResource ShellDangerButtonStyle}"/>
-            </StackPanel>
-        </DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="Test Connection" Click="btnTestConnection_Click" Width="140" Style="{StaticResource ShellPositiveButtonStyle}"/>
+                    <Button Content="Add" Click="plusActivity_Click" Width="72" Style="{StaticResource ShellActionButtonStyle}"/>
+                    <Button Content="Remove" Click="minusActivity_Click" Width="88" Style="{StaticResource ShellDangerButtonStyle}"/>
+                </StackPanel>
+            </DockPanel>
+
+            <Border Margin="0,14,0,0"
+                    Style="{StaticResource ShellNoticeCardStyle}">
+                <TextBlock Text="Legend: Name is the device label, Active enables the device, and the point link connects it to the logical point used by measurements."
+                           Style="{StaticResource ShellPageSubtitleStyle}"/>
+            </Border>
+        </StackPanel>
 
         <Border Grid.Row="1"
                 Margin="0,16,0,16"

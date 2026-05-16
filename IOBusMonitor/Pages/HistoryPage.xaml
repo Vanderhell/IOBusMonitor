@@ -4,19 +4,28 @@
       xmlns:oxy="http://oxyplot.org/wpf"
       Background="{StaticResource ShellBrush.Background}">
 
-    <Grid Margin="16">
+    <Grid x:Name="HistoryLayoutRoot"
+          Margin="16">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="320"/>
+            <ColumnDefinition Width="320" x:Name="HistorySidebarColumn"/>
+            <ColumnDefinition Width="16" x:Name="HistoryGapColumn"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-        <Border Grid.Column="0"
+        <Border x:Name="HistoryControlsCard"
+                Grid.Row="0"
+                Grid.Column="0"
                 Style="{StaticResource ShellPanelCardStyle}"
-                Margin="0,0,16,0">
-            <StackPanel>
-                <TextBlock Text="History Explorer" Style="{StaticResource ShellPageTitleStyle}"/>
+                Margin="0,0,0,0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
                 <TextBlock Text="Select a configured point, then load archived samples and control which measurements are visible on the chart."
-                           Margin="0,6,0,0"
                            Style="{StaticResource ShellPageSubtitleStyle}"/>
 
                 <TextBlock Text="Points"
@@ -49,10 +58,13 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
-            </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
         </Border>
 
-        <Border Grid.Column="1"
+        <Border x:Name="HistoryChartCard"
+                Grid.Row="0"
+                Grid.Column="2"
                 Style="{StaticResource ShellPanelCardStyle}"
                 Padding="16">
             <Grid>
@@ -63,8 +75,7 @@
 
                 <StackPanel>
                     <TextBlock Text="Trend Chart"
-                               FontSize="18"
-                               FontWeight="SemiBold"/>
+                               Style="{StaticResource ShellSectionHeadingStyle}"/>
                     <TextBlock Text="Archive data is loaded from local SQLite files in the configured data path."
                                Margin="0,4,0,0"
                                Style="{StaticResource ShellPageSubtitleStyle}"/>

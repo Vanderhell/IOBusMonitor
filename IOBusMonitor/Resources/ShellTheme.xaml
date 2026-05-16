@@ -2,10 +2,10 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Color x:Key="ShellColor.Background">#FFF4F6F8</Color>
     <Color x:Key="ShellColor.Surface">#FFFFFFFF</Color>
-    <Color x:Key="ShellColor.SurfaceAlt">#FFE8EDF2</Color>
-    <Color x:Key="ShellColor.Border">#FFD5DCE5</Color>
+    <Color x:Key="ShellColor.SurfaceAlt">#FFF0F4F7</Color>
+    <Color x:Key="ShellColor.Border">#FFD9E1E8</Color>
     <Color x:Key="ShellColor.Nav">#FF1F2A36</Color>
-    <Color x:Key="ShellColor.Primary">#FF0B5CAD</Color>
+    <Color x:Key="ShellColor.Primary">#FF315C7C</Color>
     <Color x:Key="ShellColor.Text">#FF1C2430</Color>
     <Color x:Key="ShellColor.TextMuted">#FF667085</Color>
 
@@ -17,6 +17,7 @@
     <SolidColorBrush x:Key="ShellBrush.Primary" Color="{StaticResource ShellColor.Primary}" />
     <SolidColorBrush x:Key="ShellBrush.Text" Color="{StaticResource ShellColor.Text}" />
     <SolidColorBrush x:Key="ShellBrush.TextMuted" Color="{StaticResource ShellColor.TextMuted}" />
+    <SolidColorBrush x:Key="ShellBrush.Active" Color="#FF5D87A6" />
 
     <Style x:Key="ShellWindowStyle" TargetType="Window">
         <Setter Property="Background" Value="{StaticResource ShellBrush.Background}" />
@@ -29,6 +30,12 @@
         <Setter Property="FontSize" Value="11" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Margin" Value="0,18,0,8" />
+    </Style>
+
+    <Style x:Key="ShellSidebarCaptionStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="#B3FFFFFF" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
 
     <Style x:Key="ShellPageTitleStyle" TargetType="TextBlock">
@@ -49,15 +56,22 @@
         <Setter Property="Foreground" Value="{StaticResource ShellBrush.Text}" />
     </Style>
 
+    <Style x:Key="ShellSectionHeadingStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource ShellBrush.Text}" />
+    </Style>
+
     <Style x:Key="ShellNavButtonStyle" TargetType="Button">
         <Setter Property="Foreground" Value="White" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
-        <Setter Property="Padding" Value="14,10" />
+        <Setter Property="Padding" Value="14,9" />
         <Setter Property="Margin" Value="0,0,0,6" />
-        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Template">
             <Setter.Value>
@@ -66,9 +80,48 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="8">
+                            CornerRadius="6">
                         <ContentPresenter Margin="{TemplateBinding Padding}"
                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="#12FFFFFF" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="#1EFFFFFF" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Chrome" Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ShellWindowControlButtonStyle" TargetType="Button">
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="6,0,0,0" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Chrome"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6">
+                        <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
@@ -87,13 +140,61 @@
         </Setter>
     </Style>
 
-    <Style x:Key="ShellActionButtonStyle" TargetType="Button">
-        <Setter Property="Foreground" Value="White" />
-        <Setter Property="Background" Value="{StaticResource ShellBrush.Primary}" />
-        <Setter Property="BorderBrush" Value="{StaticResource ShellBrush.Primary}" />
+    <Style x:Key="ShellRailToggleButtonStyle" TargetType="ToggleButton">
+        <Setter Property="Foreground" Value="#CCFFFFFF" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Padding" Value="14,8" />
-        <Setter Property="Margin" Value="0,0,8,0" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="Margin" Value="0,0,0,8" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Chrome"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8">
+                        <Grid>
+                            <Border x:Name="ActiveBar"
+                                    Width="3"
+                                    HorizontalAlignment="Left"
+                                    Background="{StaticResource ShellBrush.Active}"
+                                    CornerRadius="3"
+                                    Opacity="0"/>
+                            <ContentPresenter Margin="{TemplateBinding Padding}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="#12FFFFFF" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter Property="Foreground" Value="White" />
+                            <Setter TargetName="Chrome" Property="Background" Value="#22FFFFFF" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="#38FFFFFF" />
+                            <Setter TargetName="ActiveBar" Property="Opacity" Value="1" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Chrome" Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ShellSubmenuButtonStyle" TargetType="Button">
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Padding" Value="12,10" />
+        <Setter Property="Margin" Value="0,0,0,6" />
         <Setter Property="FontSize" Value="13" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Cursor" Value="Hand" />
@@ -104,17 +205,118 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="8">
+                            CornerRadius="6">
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="#10FFFFFF" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="#1AFFFFFF" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Chrome" Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ShellSubmenuToggleButtonStyle" TargetType="ToggleButton">
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Padding" Value="12,10" />
+        <Setter Property="Margin" Value="0,0,0,6" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Chrome"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6">
+                        <Grid>
+                            <Border x:Name="ActiveBar"
+                                    Width="3"
+                                    HorizontalAlignment="Left"
+                                    Background="{StaticResource ShellBrush.Active}"
+                                    CornerRadius="3"
+                                    Opacity="0"/>
+                            <ContentPresenter Margin="{TemplateBinding Padding}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="#10FFFFFF" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="#1F3A566D" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="#4A82A6C4" />
+                            <Setter TargetName="ActiveBar" Property="Opacity" Value="1" />
+                            <Setter Property="Foreground" Value="White" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="#1AFFFFFF" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Chrome" Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ShellBreadcrumbStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource ShellBrush.TextMuted}" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+
+    <Style x:Key="ShellActionButtonStyle" TargetType="Button">
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="{StaticResource ShellBrush.Primary}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ShellBrush.Primary}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="14,8" />
+        <Setter Property="Margin" Value="0,0,8,0" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Chrome"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6">
                         <ContentPresenter Margin="{TemplateBinding Padding}"
                                           HorizontalAlignment="Center"
                                           VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Chrome" Property="Opacity" Value="0.92" />
+                            <Setter TargetName="Chrome" Property="Background" Value="#FF294B64" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="#FF294B64" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Chrome" Property="Opacity" Value="0.82" />
+                            <Setter TargetName="Chrome" Property="Background" Value="#FF233F54" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="#FF233F54" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="Chrome" Property="Opacity" Value="0.45" />
@@ -127,8 +329,21 @@
 
     <Style x:Key="ShellSecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ShellActionButtonStyle}">
         <Setter Property="Foreground" Value="{StaticResource ShellBrush.Text}" />
-        <Setter Property="Background" Value="{StaticResource ShellBrush.Surface}" />
-        <Setter Property="BorderBrush" Value="{StaticResource ShellBrush.Border}" />
+        <Setter Property="Background" Value="#FFF6F8FA" />
+        <Setter Property="BorderBrush" Value="#FFD9E1E8" />
+    </Style>
+
+    <Style x:Key="ShellSidebarPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ShellActionButtonStyle}">
+        <Setter Property="Background" Value="#FF36556F" />
+        <Setter Property="BorderBrush" Value="#FF36556F" />
+        <Setter Property="Margin" Value="0" />
+    </Style>
+
+    <Style x:Key="ShellSidebarSecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ShellActionButtonStyle}">
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="#12FFFFFF" />
+        <Setter Property="BorderBrush" Value="#24FFFFFF" />
+        <Setter Property="Margin" Value="0" />
     </Style>
 
     <Style x:Key="ShellToggleButtonStyle" TargetType="ToggleButton">
@@ -171,20 +386,20 @@
     </Style>
 
     <Style x:Key="ShellPositiveButtonStyle" TargetType="Button" BasedOn="{StaticResource ShellActionButtonStyle}">
-        <Setter Property="Background" Value="#FF3E7A3E" />
-        <Setter Property="BorderBrush" Value="#FF3E7A3E" />
+        <Setter Property="Background" Value="#FF4B6B57" />
+        <Setter Property="BorderBrush" Value="#FF4B6B57" />
     </Style>
 
     <Style x:Key="ShellDangerButtonStyle" TargetType="Button" BasedOn="{StaticResource ShellActionButtonStyle}">
-        <Setter Property="Background" Value="#FFB85E2C" />
-        <Setter Property="BorderBrush" Value="#FFB85E2C" />
+        <Setter Property="Background" Value="#FF82544C" />
+        <Setter Property="BorderBrush" Value="#FF82544C" />
     </Style>
 
     <Style x:Key="ShellCardStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource ShellBrush.Surface}" />
         <Setter Property="BorderBrush" Value="{StaticResource ShellBrush.Border}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="CornerRadius" Value="6" />
     </Style>
 
     <Style x:Key="ShellPanelCardStyle" TargetType="Border" BasedOn="{StaticResource ShellCardStyle}">
@@ -192,8 +407,8 @@
     </Style>
 
     <Style x:Key="ShellNoticeCardStyle" TargetType="Border" BasedOn="{StaticResource ShellCardStyle}">
-        <Setter Property="Background" Value="#FFF6FBFF" />
-        <Setter Property="BorderBrush" Value="#FFB8D8EF" />
+        <Setter Property="Background" Value="#FFF7FAFC" />
+        <Setter Property="BorderBrush" Value="#FFD7E3EC" />
         <Setter Property="Padding" Value="14" />
     </Style>
 
@@ -201,28 +416,66 @@
         <Setter Property="Background" Value="#12FFFFFF" />
         <Setter Property="BorderBrush" Value="#24FFFFFF" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="CornerRadius" Value="6" />
         <Setter Property="Padding" Value="14" />
     </Style>
 
     <Style x:Key="ShellBadgeStyle" TargetType="Border">
         <Setter Property="Padding" Value="10,4" />
         <Setter Property="CornerRadius" Value="999" />
-        <Setter Property="Background" Value="#FFFCE3B4" />
-        <Setter Property="BorderBrush" Value="#FFE0B24E" />
+        <Setter Property="Background" Value="#FFF5E7BF" />
+        <Setter Property="BorderBrush" Value="#FFE3C57A" />
         <Setter Property="BorderThickness" Value="1" />
     </Style>
 
     <Style x:Key="ShellMetricCardStyle" TargetType="Border" BasedOn="{StaticResource ShellCardStyle}">
-        <Setter Property="Background" Value="{StaticResource ShellBrush.SurfaceAlt}" />
+        <Setter Property="Background" Value="#FFF8FAFB" />
         <Setter Property="Padding" Value="16,12" />
+    </Style>
+
+    <Style x:Key="ShellDataGridHeaderStyle" TargetType="DataGridColumnHeader">
+        <Setter Property="Background" Value="#FFF8FAFB" />
+        <Setter Property="Foreground" Value="{StaticResource ShellBrush.Text}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ShellBrush.Border}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Padding" Value="12,9" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="ShellDataGridCellStyle" TargetType="DataGridCell">
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="14,10" />
+        <Setter Property="Foreground" Value="{StaticResource ShellBrush.Text}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="ShellDataGridRowStyle" TargetType="DataGridRow">
+        <Setter Property="Background" Value="{StaticResource ShellBrush.Surface}" />
+        <Setter Property="BorderBrush" Value="#FFE7EDF2" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Margin" Value="0,0,0,4" />
+        <Setter Property="MinHeight" Value="38" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#FFF7FAFC" />
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="#FFEAF0F5" />
+                <Setter Property="Foreground" Value="{StaticResource ShellBrush.Text}" />
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <Style x:Key="ShellDataGridStyle" TargetType="DataGrid">
         <Setter Property="Background" Value="{StaticResource ShellBrush.Surface}" />
         <Setter Property="BorderBrush" Value="{StaticResource ShellBrush.Border}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="GridLinesVisibility" Value="Horizontal" />
+        <Setter Property="GridLinesVisibility" Value="None" />
         <Setter Property="HeadersVisibility" Value="Column" />
         <Setter Property="RowHeaderWidth" Value="0" />
         <Setter Property="CanUserAddRows" Value="False" />
@@ -232,9 +485,13 @@
         <Setter Property="SelectionUnit" Value="FullRow" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="RowBackground" Value="{StaticResource ShellBrush.Surface}" />
-        <Setter Property="AlternatingRowBackground" Value="#FFF8FAFC" />
-        <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource ShellBrush.Border}" />
-        <Setter Property="VerticalGridLinesBrush" Value="{StaticResource ShellBrush.Border}" />
+        <Setter Property="AlternatingRowBackground" Value="#FFFBFCFD" />
+        <Setter Property="HorizontalGridLinesBrush" Value="Transparent" />
+        <Setter Property="VerticalGridLinesBrush" Value="Transparent" />
+        <Setter Property="RowHeight" Value="40" />
+        <Setter Property="ColumnHeaderStyle" Value="{StaticResource ShellDataGridHeaderStyle}" />
+        <Setter Property="CellStyle" Value="{StaticResource ShellDataGridCellStyle}" />
+        <Setter Property="RowStyle" Value="{StaticResource ShellDataGridRowStyle}" />
     </Style>
 
     <Style x:Key="ShellListBoxStyle" TargetType="ListBox">
@@ -242,6 +499,25 @@
         <Setter Property="BorderBrush" Value="{StaticResource ShellBrush.Border}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="6" />
+    </Style>
+
+    <Style x:Key="ShellTextBoxStyle" TargetType="TextBox">
+        <Setter Property="Background" Value="{StaticResource ShellBrush.Surface}" />
+        <Setter Property="Foreground" Value="{StaticResource ShellBrush.Text}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ShellBrush.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="10,8" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="ShellComboBoxStyle" TargetType="ComboBox">
+        <Setter Property="Background" Value="{StaticResource ShellBrush.Surface}" />
+        <Setter Property="Foreground" Value="{StaticResource ShellBrush.Text}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ShellBrush.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="FontSize" Value="13" />
     </Style>
 
     <Style x:Key="ShellCheckBoxStyle" TargetType="CheckBox">

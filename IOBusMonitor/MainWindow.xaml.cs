@@ -2,6 +2,9 @@
 using IOBusMonitorLib;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
+using System.Windows.Media;
 
 namespace IOBusMonitor
 {
@@ -23,17 +26,21 @@ namespace IOBusMonitor
             Loaded += (s, e) =>
             {
                 var settings = new SettingsService().LoadSettings();
+                ApplySidebarChrome();
+                ApplyWindowStateChrome();
 
                 if (settings.AutoStart)
                 {
                     vm.StartMonitoring();
-                    MainContentFrame.Content = new DashboardPage();
+                    vm.ShowDashboardCommand.Execute(null);
                 }
                 else
                 {
-                    MainContentFrame.Content = new Home();
+                    vm.ShowHomeCommand.Execute(null);
                 }
             };
+
+            StateChanged += (s, e) => ApplyWindowStateChrome();
 
         }
 
@@ -41,6 +48,8 @@ namespace IOBusMonitor
         {
             if (e.PropertyName == nameof(MainViewModel.IsMonitoring))
                 UpdateTrayMenuItems();
+            else if (e.PropertyName == nameof(MainViewModel.IsSidebarExpanded))
+                ApplySidebarChrome();
         }
 
         private void UpdateTrayMenuItems()
@@ -103,6 +112,72 @@ namespace IOBusMonitor
         {
             Hide();
             HC.Growl.InfoGlobal("The application is running in the tray.");
+        }
+
+        private void MinimizeWindow_Click(object _, RoutedEventArgs __)
+        {
+            WindowState = WindowState.Minimized;
+        }
+
+        private void ToggleMaximizeWindow_Click(object _, RoutedEventArgs __)
+        {
+            WindowState = WindowState == WindowState.Maximized
+                ? WindowState.Normal
+                : WindowState.Maximized;
+        }
+
+        private void ShellDragRegion_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ClickCount == 2)
+            {
+                ToggleMaximizeWindow_Click(sender, e);
+                return;
+            }
+
+            if (e.OriginalSource is DependencyObject source && IsInteractiveElement(source))
+                return;
+
+            if (e.ButtonState == MouseButtonState.Pressed)
+                DragMove();
+        }
+
+        private void SidebarSectionRail_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+                vm.IsSidebarExpanded = true;
+        }
+
+        private static bool IsInteractiveElement(DependencyObject element)
+        {
+            while (element != null)
+            {
+                if (element is ButtonBase)
+                    return true;
+
+                element = VisualTreeHelper.GetParent(element);
+            }
+
+            return false;
+        }
+
+        private void ApplyWindowStateChrome()
+        {
+            WindowHostBorder.Padding = WindowState == WindowState.Maximized
+                ? new Thickness(8)
+                : new Thickness(0);
+            MaximizeToggleButton.Content = WindowState == WindowState.Maximized
+                ? "❐"
+                : "□";
+        }
+
+        private void ApplySidebarChrome()
+        {
+            if (SidebarToggleButton == null)
+                return;
+
+            SidebarToggleButton.Content = (DataContext as MainViewModel)?.IsSidebarExpanded == true
+                ? "‹"
+                : "›";
         }
     }
 }

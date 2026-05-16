@@ -27,10 +27,17 @@ namespace IOBusMonitor
         private string _shellSubtitle;
         private bool _isDemoModeEnabled;
         private bool _showEnableDemoPrompt;
+        private string _selectedSidebarSection = "Monitoring";
+        private string _selectedNavigationItem;
+        private bool _isSidebarExpanded = true;
+        private string _currentPageTitle = "Welcome";
+        private string _currentPageDescription = "Use the navigation rail to open live monitoring, history, or configuration pages.";
+        private string _currentPageBreadcrumb = "Monitoring / Overview";
 
         public ICommand StartCommand { get; }
         public ICommand StopCommand { get; }
         public ICommand EnableDemoModeCommand { get; }
+        public ICommand ShowHomeCommand { get; }
         public ICommand ShowDashboardCommand { get; }
         public ICommand ShowHistoryCommand { get; }
         public ICommand ShowModbusTCPDevicesCommand { get; }
@@ -64,8 +71,8 @@ namespace IOBusMonitor
             get
             {
                 if (IsDemoModeEnabled)
-                    return IsMonitoring ? "Demo mode active" : "Demo mode ready";
-                return IsMonitoring ? "Monitoring active" : "Monitoring stopped";
+                    return IsMonitoring ? "Demo active" : "Demo ready";
+                return IsMonitoring ? "Live active" : "Live idle";
             }
         }
 
@@ -114,6 +121,150 @@ namespace IOBusMonitor
             get { return AppVersionProvider.GetDisplayVersion(); }
         }
 
+        public string CurrentPageTitle
+        {
+            get { return _currentPageTitle; }
+            set { SetProperty(ref _currentPageTitle, value); }
+        }
+
+        public string CurrentPageDescription
+        {
+            get { return _currentPageDescription; }
+            set { SetProperty(ref _currentPageDescription, value); }
+        }
+
+        public string CurrentPageBreadcrumb
+        {
+            get { return _currentPageBreadcrumb; }
+            set { SetProperty(ref _currentPageBreadcrumb, value); }
+        }
+
+        public bool IsSidebarExpanded
+        {
+            get { return _isSidebarExpanded; }
+            set { SetProperty(ref _isSidebarExpanded, value); }
+        }
+
+        public bool IsHomeSelected
+        {
+            get { return _selectedNavigationItem == "Home"; }
+            set { if (value) SelectNavigationItem("Monitoring", "Home"); }
+        }
+
+        public bool IsDashboardSelected
+        {
+            get { return _selectedNavigationItem == "Dashboard"; }
+            set { if (value) SelectNavigationItem("Monitoring", "Dashboard"); }
+        }
+
+        public bool IsHistorySelected
+        {
+            get { return _selectedNavigationItem == "History"; }
+            set { if (value) SelectNavigationItem("Monitoring", "History"); }
+        }
+
+        public bool IsModbusTcpDevicesSelected
+        {
+            get { return _selectedNavigationItem == "ModbusTcpDevices"; }
+            set { if (value) SelectNavigationItem("ModbusTcp", "ModbusTcpDevices"); }
+        }
+
+        public bool IsModbusTcpPointsSelected
+        {
+            get { return _selectedNavigationItem == "ModbusTcpPoints"; }
+            set { if (value) SelectNavigationItem("ModbusTcp", "ModbusTcpPoints"); }
+        }
+
+        public bool IsModbusTcpMeasurementsSelected
+        {
+            get { return _selectedNavigationItem == "ModbusTcpMeasurements"; }
+            set { if (value) SelectNavigationItem("ModbusTcp", "ModbusTcpMeasurements"); }
+        }
+
+        public bool IsModbusRtuDevicesSelected
+        {
+            get { return _selectedNavigationItem == "ModbusRtuDevices"; }
+            set { if (value) SelectNavigationItem("ModbusRtu", "ModbusRtuDevices"); }
+        }
+
+        public bool IsModbusRtuPointsSelected
+        {
+            get { return _selectedNavigationItem == "ModbusRtuPoints"; }
+            set { if (value) SelectNavigationItem("ModbusRtu", "ModbusRtuPoints"); }
+        }
+
+        public bool IsModbusRtuMeasurementsSelected
+        {
+            get { return _selectedNavigationItem == "ModbusRtuMeasurements"; }
+            set { if (value) SelectNavigationItem("ModbusRtu", "ModbusRtuMeasurements"); }
+        }
+
+        public bool IsS7DevicesSelected
+        {
+            get { return _selectedNavigationItem == "S7Devices"; }
+            set { if (value) SelectNavigationItem("S7", "S7Devices"); }
+        }
+
+        public bool IsS7PointsSelected
+        {
+            get { return _selectedNavigationItem == "S7Points"; }
+            set { if (value) SelectNavigationItem("S7", "S7Points"); }
+        }
+
+        public bool IsS7MeasurementsSelected
+        {
+            get { return _selectedNavigationItem == "S7Measurements"; }
+            set { if (value) SelectNavigationItem("S7", "S7Measurements"); }
+        }
+
+        public bool IsSettingsSelected
+        {
+            get { return _selectedNavigationItem == "Settings"; }
+            set { if (value) SelectNavigationItem("Application", "Settings"); }
+        }
+
+        public bool IsResetSettingsSelected
+        {
+            get { return _selectedNavigationItem == "ResetSettings"; }
+            set { if (value) SelectNavigationItem("Application", "ResetSettings"); }
+        }
+
+        public bool IsAboutSelected
+        {
+            get { return _selectedNavigationItem == "About"; }
+            set { if (value) SelectNavigationItem("Application", "About"); }
+        }
+
+        public bool IsMonitoringSectionSelected
+        {
+            get { return _selectedSidebarSection == "Monitoring"; }
+            set { if (value) SelectSidebarSection("Monitoring"); }
+        }
+
+        public bool IsModbusTcpSectionSelected
+        {
+            get { return _selectedSidebarSection == "ModbusTcp"; }
+            set { if (value) SelectSidebarSection("ModbusTcp"); }
+        }
+
+        public bool IsModbusRtuSectionSelected
+        {
+            get { return _selectedSidebarSection == "ModbusRtu"; }
+            set { if (value) SelectSidebarSection("ModbusRtu"); }
+        }
+
+        public bool IsS7SectionSelected
+        {
+            get { return _selectedSidebarSection == "S7"; }
+            set { if (value) SelectSidebarSection("S7"); }
+        }
+
+        public bool IsApplicationSectionSelected
+        {
+            get { return _selectedSidebarSection == "Application"; }
+            set { if (value) SelectSidebarSection("Application"); }
+        }
+
         public string ShellSubtitle
         {
             get { return _shellSubtitle; }
@@ -134,23 +285,24 @@ namespace IOBusMonitor
             StopCommand = new RelayCommand(StopMonitoring, () => _timerService.IsRunning);
             EnableDemoModeCommand = new RelayCommand(EnableDemoMode);
 
-            ShowDashboardCommand = new RelayCommand(() => NavigateTo(new DashboardPage()));
-            ShowHistoryCommand = new RelayCommand(() => NavigateTo(new HistoryPage()));
+            ShowHomeCommand = new RelayCommand(() => NavigateTo(new Home(), "Monitoring", "Home"));
+            ShowDashboardCommand = new RelayCommand(() => NavigateTo(new DashboardPage(), "Monitoring", "Dashboard"));
+            ShowHistoryCommand = new RelayCommand(() => NavigateTo(new HistoryPage(), "Monitoring", "History"));
 
-            ShowModbusTCPDevicesCommand = new RelayCommand(() => NavigateTo(new ModbusTCPDeviceAdminPage()));
-            ShowModbusTCPPointsCommand = new RelayCommand(() => NavigateTo(new ModbusTCPPointAdminPage()));
-            ShowModbusTCPMeasurementsCommand = new RelayCommand(() => NavigateTo(new ModbusTCPMeasurementAdminPage()));
+            ShowModbusTCPDevicesCommand = new RelayCommand(() => NavigateTo(new ModbusTCPDeviceAdminPage(), "ModbusTcp", "ModbusTcpDevices"));
+            ShowModbusTCPPointsCommand = new RelayCommand(() => NavigateTo(new ModbusTCPPointAdminPage(), "ModbusTcp", "ModbusTcpPoints"));
+            ShowModbusTCPMeasurementsCommand = new RelayCommand(() => NavigateTo(new ModbusTCPMeasurementAdminPage(), "ModbusTcp", "ModbusTcpMeasurements"));
 
-            ShowModbusRTUDevicesCommand = new RelayCommand(() => NavigateTo(new ModbusRTUDeviceAdminPage()));
-            ShowModbusRTUPointsCommand = new RelayCommand(() => NavigateTo(new ModbusRTUPointAdminPage()));
-            ShowModbusRTUMeasurementsCommand = new RelayCommand(() => NavigateTo(new ModbusRTUMeasurementAdminPage()));
+            ShowModbusRTUDevicesCommand = new RelayCommand(() => NavigateTo(new ModbusRTUDeviceAdminPage(), "ModbusRtu", "ModbusRtuDevices"));
+            ShowModbusRTUPointsCommand = new RelayCommand(() => NavigateTo(new ModbusRTUPointAdminPage(), "ModbusRtu", "ModbusRtuPoints"));
+            ShowModbusRTUMeasurementsCommand = new RelayCommand(() => NavigateTo(new ModbusRTUMeasurementAdminPage(), "ModbusRtu", "ModbusRtuMeasurements"));
 
-            ShowS7DevicesCommand = new RelayCommand(() => NavigateTo(new SimensDeviceAdminPage()));
-            ShowS7PointsCommand = new RelayCommand(() => NavigateTo(new SimensPointAdminPage()));
-            ShowS7MeasurementsCommand = new RelayCommand(() => NavigateTo(new SimensMeasurementAdminPage()));
+            ShowS7DevicesCommand = new RelayCommand(() => NavigateTo(new SimensDeviceAdminPage(), "S7", "S7Devices"));
+            ShowS7PointsCommand = new RelayCommand(() => NavigateTo(new SimensPointAdminPage(), "S7", "S7Points"));
+            ShowS7MeasurementsCommand = new RelayCommand(() => NavigateTo(new SimensMeasurementAdminPage(), "S7", "S7Measurements"));
 
-            ShowAppSettingsCommand = new RelayCommand(() => NavigateTo(new AppSettingsPage()));
-            ShowAboutCommand = new RelayCommand(() => NavigateTo(new AboutApp()));
+            ShowAppSettingsCommand = new RelayCommand(() => NavigateTo(new AppSettingsPage(), "Application", "Settings"));
+            ShowAboutCommand = new RelayCommand(() => NavigateTo(new AboutApp(), "Application", "About"));
 
             ExitCommand = new RelayCommand(() => Application.Current.Shutdown());
             RestartCommand = new RelayCommand(ResetSettings);
@@ -158,6 +310,7 @@ namespace IOBusMonitor
 
         private void ResetSettings()
         {
+            SelectNavigationItem("Application", "ResetSettings");
             var settingsService = new SettingsService();
             var settings = settingsService.LoadSettings();
             settingsService.SaveSettings(settings);
@@ -181,9 +334,147 @@ namespace IOBusMonitor
             RefreshShellStatus();
         }
 
-        private void NavigateTo(Page page)
+        private void NavigateTo(Page page, string sectionKey = null, string itemKey = null)
         {
+            if (!string.IsNullOrWhiteSpace(sectionKey))
+                SelectSidebarSection(sectionKey);
+            if (!string.IsNullOrWhiteSpace(itemKey))
+                SelectNavigationItem(sectionKey, itemKey);
+
             if (_mainFrame != null) _mainFrame.Navigate(page);
+        }
+
+        private void SelectSidebarSection(string sectionKey)
+        {
+            if (_selectedSidebarSection == sectionKey)
+            {
+                if (!IsSidebarExpanded)
+                    IsSidebarExpanded = true;
+                return;
+            }
+
+            _selectedSidebarSection = sectionKey;
+            if (!IsSidebarExpanded)
+                IsSidebarExpanded = true;
+            OnPropertyChanged(nameof(IsMonitoringSectionSelected));
+            OnPropertyChanged(nameof(IsModbusTcpSectionSelected));
+            OnPropertyChanged(nameof(IsModbusRtuSectionSelected));
+            OnPropertyChanged(nameof(IsS7SectionSelected));
+            OnPropertyChanged(nameof(IsApplicationSectionSelected));
+        }
+
+        private void SelectNavigationItem(string sectionKey, string itemKey)
+        {
+            if (!string.IsNullOrWhiteSpace(sectionKey))
+                SelectSidebarSection(sectionKey);
+
+            if (_selectedNavigationItem == itemKey)
+                return;
+
+            _selectedNavigationItem = itemKey;
+            OnPropertyChanged(nameof(IsHomeSelected));
+            OnPropertyChanged(nameof(IsDashboardSelected));
+            OnPropertyChanged(nameof(IsHistorySelected));
+            OnPropertyChanged(nameof(IsModbusTcpDevicesSelected));
+            OnPropertyChanged(nameof(IsModbusTcpPointsSelected));
+            OnPropertyChanged(nameof(IsModbusTcpMeasurementsSelected));
+            OnPropertyChanged(nameof(IsModbusRtuDevicesSelected));
+            OnPropertyChanged(nameof(IsModbusRtuPointsSelected));
+            OnPropertyChanged(nameof(IsModbusRtuMeasurementsSelected));
+            OnPropertyChanged(nameof(IsS7DevicesSelected));
+            OnPropertyChanged(nameof(IsS7PointsSelected));
+            OnPropertyChanged(nameof(IsS7MeasurementsSelected));
+            OnPropertyChanged(nameof(IsSettingsSelected));
+            OnPropertyChanged(nameof(IsResetSettingsSelected));
+            OnPropertyChanged(nameof(IsAboutSelected));
+            UpdatePageContext(itemKey);
+        }
+
+        private void UpdatePageContext(string itemKey)
+        {
+            switch (itemKey)
+            {
+                case "Home":
+                    CurrentPageTitle = "Overview";
+                    CurrentPageDescription = "Start here for orientation, recommended workflow, and a quick summary of the workspace.";
+                    CurrentPageBreadcrumb = "Monitoring / Overview";
+                    break;
+                case "Dashboard":
+                    CurrentPageTitle = "Dashboard";
+                    CurrentPageDescription = "Inspect live values, protocol status, and recent scan activity in one table.";
+                    CurrentPageBreadcrumb = "Monitoring / Dashboard";
+                    break;
+                case "History":
+                    CurrentPageTitle = "History";
+                    CurrentPageDescription = "Load archived samples from local SQLite storage and review measurement trends.";
+                    CurrentPageBreadcrumb = "Monitoring / History";
+                    break;
+                case "ModbusTcpDevices":
+                    CurrentPageTitle = "Modbus TCP Devices";
+                    CurrentPageDescription = "Define TCP endpoints used by live polling and archive capture.";
+                    CurrentPageBreadcrumb = "Modbus TCP / Devices";
+                    break;
+                case "ModbusTcpPoints":
+                    CurrentPageTitle = "Modbus TCP Points";
+                    CurrentPageDescription = "Map device points and organize logical addresses for TCP measurements.";
+                    CurrentPageBreadcrumb = "Modbus TCP / Points";
+                    break;
+                case "ModbusTcpMeasurements":
+                    CurrentPageTitle = "Modbus TCP Measurements";
+                    CurrentPageDescription = "Configure individual values, units, formulas, and history behavior for TCP points.";
+                    CurrentPageBreadcrumb = "Modbus TCP / Measurements";
+                    break;
+                case "ModbusRtuDevices":
+                    CurrentPageTitle = "Modbus RTU Devices";
+                    CurrentPageDescription = "Configure serial devices, slave IDs, and line parameters for RTU polling.";
+                    CurrentPageBreadcrumb = "Modbus RTU / Devices";
+                    break;
+                case "ModbusRtuPoints":
+                    CurrentPageTitle = "Modbus RTU Points";
+                    CurrentPageDescription = "Model serial point structures and prepare address groups for RTU reads.";
+                    CurrentPageBreadcrumb = "Modbus RTU / Points";
+                    break;
+                case "ModbusRtuMeasurements":
+                    CurrentPageTitle = "Modbus RTU Measurements";
+                    CurrentPageDescription = "Set up RTU measurement definitions, scaling, and history capture rules.";
+                    CurrentPageBreadcrumb = "Modbus RTU / Measurements";
+                    break;
+                case "S7Devices":
+                    CurrentPageTitle = "Siemens S7 Devices";
+                    CurrentPageDescription = "Manage PLC endpoints, rack-slot addressing, and connection settings.";
+                    CurrentPageBreadcrumb = "Siemens S7 / Devices";
+                    break;
+                case "S7Points":
+                    CurrentPageTitle = "Siemens S7 Points";
+                    CurrentPageDescription = "Organize Siemens point blocks and address mappings for monitored values.";
+                    CurrentPageBreadcrumb = "Siemens S7 / Points";
+                    break;
+                case "S7Measurements":
+                    CurrentPageTitle = "Siemens S7 Measurements";
+                    CurrentPageDescription = "Tune individual S7 values, formatting, units, and storage behavior.";
+                    CurrentPageBreadcrumb = "Siemens S7 / Measurements";
+                    break;
+                case "Settings":
+                    CurrentPageTitle = "Application Settings";
+                    CurrentPageDescription = "Adjust workspace defaults, paths, polling behavior, and demo mode settings.";
+                    CurrentPageBreadcrumb = "Application / Settings";
+                    break;
+                case "ResetSettings":
+                    CurrentPageTitle = "Application Settings";
+                    CurrentPageDescription = "Workspace defaults were reset. Review settings before restarting monitoring.";
+                    CurrentPageBreadcrumb = "Application / Settings";
+                    break;
+                case "About":
+                    CurrentPageTitle = "About";
+                    CurrentPageDescription = "Version, product positioning, supported protocols, and project context.";
+                    CurrentPageBreadcrumb = "Application / About";
+                    break;
+                default:
+                    CurrentPageTitle = "Welcome";
+                    CurrentPageDescription = "Use the navigation rail to open live monitoring, history, or configuration pages.";
+                    CurrentPageBreadcrumb = "Monitoring / Overview";
+                    break;
+            }
         }
 
         private void OnPointRead(PointViewModel point)
