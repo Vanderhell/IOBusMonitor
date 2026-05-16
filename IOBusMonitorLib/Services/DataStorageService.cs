@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Data.SQLite;
 using System.IO;
 
@@ -10,6 +11,9 @@ namespace IOBusMonitorLib
     /// </summary>
     public class DataStorageService
     {
+        private const int CurrentSchemaVersion = 1;
+        private const int BusyTimeoutMs = 5000;
+
         // ---------------- path helpers --------------------------------------
 
         private string GetDatabasePath()
@@ -29,40 +33,86 @@ namespace IOBusMonitorLib
 
         // ---------------- schema helper -------------------------------------
 
-        private void EnsureDatabaseAndTableExist(string dbFile)
+        private SQLiteConnection OpenConnection(string dbFile, string operation)
         {
-            bool newDb = !File.Exists(dbFile);
+            var conn = new SQLiteConnection("Data Source=" + dbFile + ";");
+            conn.Open();
 
             try
             {
-                using (var conn = new SQLiteConnection("Data Source=" + dbFile + ";"))
-                {
-                    conn.Open();
+                ApplyConnectionPragmas(conn);
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError(
+                    $"Failed to apply SQLite PRAGMAs for '{dbFile}' during {operation}: {ex.Message}");
+            }
 
-                    if (newDb)
+            return conn;
+        }
+
+        private static void ApplyConnectionPragmas(SQLiteConnection conn)
+        {
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText =
+@"PRAGMA journal_mode = WAL;
+PRAGMA synchronous = NORMAL;
+PRAGMA busy_timeout = " + BusyTimeoutMs + ";";
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        private void EnsureDatabaseSchema(SQLiteConnection conn, string dbFile)
+        {
+            try
+            {
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText =
+@"CREATE TABLE IF NOT EXISTS MeasurementData (
+      Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      Timestamp       DATETIME,
+      DeviceId        INTEGER,
+      PointId         INTEGER,
+      MeasurementId   INTEGER,
+      DeviceName      TEXT,
+      PointName       TEXT,
+      MeasurementName TEXT,
+      Value           REAL,
+      Unit            TEXT,
+      PointType       INTEGER
+  );
+  CREATE INDEX IF NOT EXISTS IX_MeasurementData_Timestamp
+      ON MeasurementData (Timestamp);
+  CREATE INDEX IF NOT EXISTS IX_MeasurementData_PointHistory
+      ON MeasurementData (DeviceId, PointId, PointType, Timestamp);
+  CREATE INDEX IF NOT EXISTS IX_MeasurementData_MeasurementHistory
+      ON MeasurementData (DeviceId, PointId, MeasurementId, PointType, Timestamp);";
+                    cmd.ExecuteNonQuery();
+                }
+
+                long userVersion;
+                using (var versionCmd = conn.CreateCommand())
+                {
+                    versionCmd.CommandText = "PRAGMA user_version;";
+                    object result = versionCmd.ExecuteScalar();
+                    userVersion = Convert.ToInt64(result);
+                }
+
+                if (userVersion < CurrentSchemaVersion)
+                {
+                    using (var versionCmd = conn.CreateCommand())
                     {
-                        var cmd = conn.CreateCommand();
-                        cmd.CommandText =
-    @"CREATE TABLE MeasurementData (
-          Id INTEGER PRIMARY KEY AUTOINCREMENT,
-          Timestamp     DATETIME,
-          DeviceId      INTEGER,
-          PointId       INTEGER,
-          MeasurementId INTEGER,
-          DeviceName    TEXT,
-          PointName     TEXT,
-          MeasurementName TEXT,
-          Value         REAL,
-          Unit          TEXT,
-          PointType     INTEGER
-      )";
-                        cmd.ExecuteNonQuery();
+                        versionCmd.CommandText = "PRAGMA user_version = " + CurrentSchemaVersion;
+                        versionCmd.ExecuteNonQuery();
                     }
                 }
             }
             catch (Exception ex)
             {
-                LogService.LogError("Database check failed: " + ex.Message);
+                LogService.LogError(
+                    $"Database schema check failed for '{dbFile}': {ex.Message}");
             }
         }
 
@@ -72,43 +122,65 @@ namespace IOBusMonitorLib
                                         PointViewModel point,
                                         PointType type)
         {
+            if (point == null || point.Measurements == null || point.Measurements.Count == 0)
+                return;
+
             try
             {
-                using (var conn = new SQLiteConnection("Data Source=" + dbFile + ";"))
+                using (var conn = OpenConnection(dbFile, "measurement insert"))
                 {
-                    conn.Open();
-                    var insert = conn.CreateCommand();
-                    insert.CommandText =
-    @"INSERT INTO MeasurementData
-      (Timestamp, DeviceId, PointId, MeasurementId,
-       DeviceName, PointName, MeasurementName,
-       Value, Unit, PointType)
-      VALUES
-      (@Ts, @DevId, @PtId, @MeasId,
-       @DevName, @PtName, @MeasName,
-       @Val, @Unit, @Type)";
+                    EnsureDatabaseSchema(conn, dbFile);
 
-                    foreach (var m in point.Measurements)
+                    using (var tx = conn.BeginTransaction())
+                    using (var insert = conn.CreateCommand())
                     {
-                        insert.Parameters.Clear();
-                        insert.Parameters.AddWithValue("@Ts", m.Timestamp);
-                        insert.Parameters.AddWithValue("@DevId", point.DeviceId);
-                        insert.Parameters.AddWithValue("@PtId", point.PointId);
-                        insert.Parameters.AddWithValue("@MeasId", m.Id);
-                        insert.Parameters.AddWithValue("@DevName", point.DeviceName);
-                        insert.Parameters.AddWithValue("@PtName", point.PointName);
-                        insert.Parameters.AddWithValue("@MeasName", m.Name);
-                        insert.Parameters.AddWithValue("@Val", m.Value);
-                        insert.Parameters.AddWithValue("@Unit", m.Unit);
-                        insert.Parameters.AddWithValue("@Type", (int)type);
+                        insert.Transaction = tx;
+                        insert.CommandText =
+@"INSERT INTO MeasurementData
+  (Timestamp, DeviceId, PointId, MeasurementId,
+   DeviceName, PointName, MeasurementName,
+   Value, Unit, PointType)
+  VALUES
+  (@Ts, @DevId, @PtId, @MeasId,
+   @DevName, @PtName, @MeasName,
+   @Val, @Unit, @Type)";
 
-                        insert.ExecuteNonQuery();
+                        var timestampParam = insert.Parameters.Add("@Ts", DbType.DateTime);
+                        var deviceIdParam = insert.Parameters.Add("@DevId", DbType.Int32);
+                        var pointIdParam = insert.Parameters.Add("@PtId", DbType.Int32);
+                        var measurementIdParam = insert.Parameters.Add("@MeasId", DbType.Int32);
+                        var deviceNameParam = insert.Parameters.Add("@DevName", DbType.String);
+                        var pointNameParam = insert.Parameters.Add("@PtName", DbType.String);
+                        var measurementNameParam = insert.Parameters.Add("@MeasName", DbType.String);
+                        var valueParam = insert.Parameters.Add("@Val", DbType.Double);
+                        var unitParam = insert.Parameters.Add("@Unit", DbType.String);
+                        var typeParam = insert.Parameters.Add("@Type", DbType.Int32);
+
+                        foreach (var m in point.Measurements)
+                        {
+                            timestampParam.Value = m.Timestamp;
+                            deviceIdParam.Value = point.DeviceId;
+                            pointIdParam.Value = point.PointId;
+                            measurementIdParam.Value = m.Id;
+                            deviceNameParam.Value = (object)point.DeviceName ?? DBNull.Value;
+                            pointNameParam.Value = (object)point.PointName ?? DBNull.Value;
+                            measurementNameParam.Value = (object)m.Name ?? DBNull.Value;
+                            valueParam.Value = m.Value;
+                            unitParam.Value = (object)m.Unit ?? DBNull.Value;
+                            typeParam.Value = (int)type;
+
+                            insert.ExecuteNonQuery();
+                        }
+
+                        tx.Commit();
                     }
                 }
             }
             catch (Exception ex)
             {
-                LogService.LogError("Failed to store measurements: " + ex.Message);
+                string pointName = point != null ? point.PointName : "<null>";
+                LogService.LogError(
+                    $"Failed to store measurements in '{dbFile}' for point '{pointName}' ({type}): {ex.Message}");
             }
         }
 
@@ -117,21 +189,18 @@ namespace IOBusMonitorLib
         public void SaveModbusTCPData(PointViewModel point)
         {
             string db = GetDatabasePath();
-            EnsureDatabaseAndTableExist(db);
             InsertMeasurements(db, point, PointType.ModbusTCP);
         }
 
         public void SaveModbusRTUData(PointViewModel point)   // typo fixed
         {
             string db = GetDatabasePath();
-            EnsureDatabaseAndTableExist(db);
             InsertMeasurements(db, point, PointType.ModbusRTU);
         }
 
         public void SaveSimensData(PointViewModel point)
         {
             string db = GetDatabasePath();
-            EnsureDatabaseAndTableExist(db);
             InsertMeasurements(db, point, PointType.S7);
         }
     }

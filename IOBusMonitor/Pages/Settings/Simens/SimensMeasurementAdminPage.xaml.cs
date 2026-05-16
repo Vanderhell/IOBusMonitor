@@ -90,7 +90,9 @@ namespace IOBusMonitor
                                 Condition = r["Condition"].ToString(),
                                 Address = r["Address"].ToString(),
                                 SimensPointId = r.GetInt32(r.GetOrdinal("SimensPointId")),
-                                Active = r.GetInt32(r.GetOrdinal("Active")) == 1
+                                Active = r.GetInt32(r.GetOrdinal("Active")) == 1,
+                                ValidationError = string.Empty,
+                                LastTestResult = string.Empty
                             });
                         }
                     }
@@ -190,6 +192,14 @@ namespace IOBusMonitor
                         SelectedValuePath = "Id"
                     };
                     break;
+                case nameof(SimensMeasurement.ValidationError):
+                    e.Column.Header = "Validation";
+                    e.Column.IsReadOnly = true;
+                    break;
+                case nameof(SimensMeasurement.LastTestResult):
+                    e.Column.Header = "Formula Test";
+                    e.Column.IsReadOnly = true;
+                    break;
                 default:
                     e.Column.Visibility = Visibility.Hidden;
                     break;
@@ -202,6 +212,13 @@ namespace IOBusMonitor
         {
             try
             {
+                CommitGridEdits();
+                if (!ValidateRows())
+                {
+                    Growl.Warning("Fix validation errors before saving.");
+                    return;
+                }
+
                 foreach (var m in _measurements) SaveMeasurement(m);
 
                 LoadMeasurements();
@@ -225,30 +242,85 @@ namespace IOBusMonitor
                 Condition = "value",
                 Address = "DB1.DBD0",
                 SimensPointId = _points.FirstOrDefault()?.Id ?? 0,
-                Active = true
+                Active = true,
+                ValidationError = "Save pending."
             };
 
-            SaveMeasurement(newMeasurement);
-            LoadMeasurements();
-            userGrid.ItemsSource = null;
-            userGrid.ItemsSource = _measurements;
-            Growl.Success("Measurement created.");
+            _measurements.Add(newMeasurement);
+            RefreshGrid();
+            Growl.Success("New measurement row added. Save to persist.");
         }
 
         private void minusActivity_Click(object sender, RoutedEventArgs e)
         {
             if (userGrid.SelectedItem is SimensMeasurement selected)
             {
-                DeleteMeasurement(selected);
-                LoadMeasurements();
-                userGrid.ItemsSource = null;
-                userGrid.ItemsSource = _measurements;
+                if (selected.Id == 0)
+                {
+                    _measurements.Remove(selected);
+                    RefreshGrid();
+                }
+                else
+                {
+                    DeleteMeasurement(selected);
+                    LoadMeasurements();
+                    userGrid.ItemsSource = null;
+                    userGrid.ItemsSource = _measurements;
+                }
+
                 Growl.Success("Measurement deleted.");
             }
             else
             {
                 Growl.Warning("Please select a measurement to delete.");
             }
+        }
+
+        private void btnTestFormula_Click(object sender, RoutedEventArgs e)
+        {
+            CommitGridEdits();
+
+            var selected = userGrid.SelectedItem as SimensMeasurement;
+            if (selected == null)
+            {
+                Growl.Warning("Please select a measurement to test.");
+                return;
+            }
+
+            selected.LastTestResult = AdminWorkflowService.TestFormula(selected.Condition);
+            selected.ValidationError = AdminWorkflowService.Validate(selected, _measurements, _points);
+            RefreshGrid();
+
+            if (selected.LastTestResult.StartsWith("Formula OK."))
+                Growl.Success(selected.LastTestResult);
+            else
+                Growl.Warning(selected.LastTestResult);
+        }
+
+        private void CommitGridEdits()
+        {
+            userGrid.CommitEdit(DataGridEditingUnit.Cell, true);
+            userGrid.CommitEdit(DataGridEditingUnit.Row, true);
+        }
+
+        private bool ValidateRows()
+        {
+            bool hasErrors = false;
+
+            foreach (var measurement in _measurements)
+            {
+                measurement.ValidationError = AdminWorkflowService.Validate(measurement, _measurements, _points);
+                if (!string.IsNullOrWhiteSpace(measurement.ValidationError))
+                    hasErrors = true;
+            }
+
+            RefreshGrid();
+            return !hasErrors;
+        }
+
+        private void RefreshGrid()
+        {
+            userGrid.Items.Refresh();
         }
     }
 }

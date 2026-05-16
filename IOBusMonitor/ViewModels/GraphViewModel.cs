@@ -5,8 +5,6 @@ using OxyPlot.Series;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.SQLite;
-using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
@@ -21,7 +19,12 @@ namespace IOBusMonitor
         private readonly bool _showAllMeasurements;
         private readonly int? _specificMeasurementId;
         private readonly SettingsService _settingsService = new SettingsService();
+        private readonly DataLoaderService _dataLoader = new DataLoaderService();
         private DispatcherTimer _liveTimer;
+        private readonly DateTime _rangeStart = DateTime.Now.AddDays(-7);
+        private readonly DateTime _rangeEnd = DateTime.Now;
+        private const int HistoryRowLimit = 5000;
+        private const int ChartPointLimit = 1000;
 
         private bool _isLiveTracking;
         public bool IsLiveTracking
@@ -156,46 +159,17 @@ namespace IOBusMonitor
 
         private List<MeasurementViewModel> LoadMeasurementHistory(PointViewModel point, int? filterId = null)
         {
-            var history = new List<MeasurementViewModel>();
-            var folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
-            if (!Directory.Exists(folder)) return history;
-
-            foreach (var dbFile in Directory.GetFiles(folder, "Data_*.db"))
+            return _dataLoader.LoadMeasurementHistory(new MeasurementQueryOptions
             {
-                using (var conn = new SQLiteConnection($"Data Source={dbFile};"))
-                {
-                    conn.Open();
-                    using (var cmd = conn.CreateCommand())
-                    {
-                        cmd.CommandText = @"SELECT Timestamp, MeasurementId, MeasurementName, Value, Unit
-                                            FROM MeasurementData
-                                            WHERE DeviceId = @DeviceId AND PointId = @PointId AND PointType = @PointType
-                                            ORDER BY Timestamp";
-                        cmd.Parameters.AddWithValue("@DeviceId", point.DeviceId);
-                        cmd.Parameters.AddWithValue("@PointId", point.PointId);
-                        cmd.Parameters.AddWithValue("@PointType", (int)point.Type);
-
-                        using (var r = cmd.ExecuteReader())
-                        {
-                            while (r.Read())
-                            {
-                                var m = new MeasurementViewModel
-                                {
-                                    Id = r.GetInt32(r.GetOrdinal("MeasurementId")),
-                                    Name = r["MeasurementName"].ToString(),
-                                    Value = r.GetDouble(r.GetOrdinal("Value")),
-                                    Unit = r["Unit"].ToString(),
-                                    Timestamp = DateTime.Parse(r["Timestamp"].ToString())
-                                };
-
-                                if (!filterId.HasValue || m.Id == filterId.Value)
-                                    history.Add(m);
-                            }
-                        }
-                    }
-                }
-            }
-            return history;
+                RangeStart = _rangeStart,
+                RangeEnd = _rangeEnd,
+                PointType = point.Type,
+                DeviceId = point.DeviceId,
+                PointId = point.PointId,
+                MeasurementId = filterId,
+                RowLimit = HistoryRowLimit,
+                MaxChartPoints = ChartPointLimit
+            });
         }
 
         private void UpdateLiveTracking()

@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Forms;
+using Forms = System.Windows.Forms;
 
 namespace IOBusMonitor
 {
@@ -15,6 +15,7 @@ namespace IOBusMonitor
     public partial class AppSettingsPage : Page
     {
         private readonly SettingsService _settingsService = new SettingsService();
+        private readonly DemoModeService _demoModeService = new DemoModeService();
         private AppSettings _settings;
 
         public AppSettingsPage()
@@ -32,6 +33,7 @@ namespace IOBusMonitor
 
             intervalInput.Value = _settings.ReadIntervalMs;
             autoStartInput.IsChecked = _settings.AutoStart;
+            demoModeInput.IsChecked = _settings.DemoModeEnabled;
 
             pathDataInput.Text = string.IsNullOrWhiteSpace(_settings.PathData)
                 ? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data")
@@ -45,10 +47,36 @@ namespace IOBusMonitor
         {
             _settings.ReadIntervalMs = (int)intervalInput.Value;
             _settings.AutoStart = autoStartInput.IsChecked == true;
-            _settings.PathData = pathDataInput.Text.Trim();
+            _settings.PathData = string.IsNullOrWhiteSpace(pathDataInput.Text)
+                ? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data")
+                : pathDataInput.Text.Trim();
+            _settings.DemoModeEnabled = demoModeInput.IsChecked == true;
+
+            if (_settings.DemoModeEnabled)
+            {
+                _demoModeService.EnsureDemoConfiguration(resetDemoData: false);
+                _demoModeService.SetDemoDeviceActiveState(true);
+            }
+            else
+            {
+                _demoModeService.SetDemoDeviceActiveState(false);
+            }
 
             _settingsService.SaveSettings(_settings);
+            RefreshMainShell();
             Growl.Success("Settings saved successfully.");
+        }
+
+        private void ResetDemo_Click(object sender, RoutedEventArgs e)
+        {
+            _settings.PathData = string.IsNullOrWhiteSpace(pathDataInput.Text)
+                ? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data")
+                : pathDataInput.Text.Trim();
+            _demoModeService.ResetDemoDataArchives(_settings.PathData);
+            _demoModeService.EnsureDemoConfiguration(resetDemoData: true);
+            _demoModeService.SetDemoDeviceActiveState(demoModeInput.IsChecked == true);
+            RefreshMainShell();
+            Growl.Success("Demo sample configuration and demo history were reset.");
         }
 
         /// <summary>
@@ -56,15 +84,25 @@ namespace IOBusMonitor
         /// </summary>
         private void BrowseFolder_Click(object sender, RoutedEventArgs e)
         {
-            using (var dlg = new FolderBrowserDialog
+            using (var dlg = new Forms.FolderBrowserDialog
             {
                 Description = "Select a folder to store application data",
                 SelectedPath = pathDataInput.Text
             })
             {
-                if (dlg.ShowDialog() == DialogResult.OK)
+                if (dlg.ShowDialog() == Forms.DialogResult.OK)
                     pathDataInput.Text = dlg.SelectedPath;
             }
+        }
+
+        private void RefreshMainShell()
+        {
+            var vm = System.Windows.Application.Current.MainWindow != null
+                ? System.Windows.Application.Current.MainWindow.DataContext as MainViewModel
+                : null;
+
+            if (vm != null)
+                vm.RefreshConfiguration();
         }
     }
 }

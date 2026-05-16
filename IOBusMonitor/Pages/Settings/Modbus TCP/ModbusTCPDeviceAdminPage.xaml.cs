@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -62,7 +64,9 @@ namespace IOBusMonitor
                                 Name = reader["Name"].ToString(),
                                 IPAddress = reader["IPAddress"].ToString(),
                                 Port = reader.GetInt32(reader.GetOrdinal("Port")),
-                                Active = reader.GetInt32(reader.GetOrdinal("Active")) == 1
+                                Active = reader.GetInt32(reader.GetOrdinal("Active")) == 1,
+                                ValidationError = string.Empty,
+                                LastTestResult = string.Empty
                             });
                         }
                     }
@@ -151,6 +155,16 @@ namespace IOBusMonitor
                     e.Column.Header = "Active";
                     break;
 
+                case nameof(ModbusTCPDevice.ValidationError):
+                    e.Column.Header = "Validation";
+                    e.Column.IsReadOnly = true;
+                    break;
+
+                case nameof(ModbusTCPDevice.LastTestResult):
+                    e.Column.Header = "Last Test";
+                    e.Column.IsReadOnly = true;
+                    break;
+
                 default:
                     e.Column.Visibility = Visibility.Hidden;
                     break;
@@ -164,6 +178,13 @@ namespace IOBusMonitor
         {
             try
             {
+                CommitGridEdits();
+                if (!ValidateRows())
+                {
+                    Growl.Warning("Fix validation errors before saving.");
+                    return;
+                }
+
                 foreach (var d in _devices)
                     SaveDevice(d);
 
@@ -188,14 +209,14 @@ namespace IOBusMonitor
                 Name = "New Device",
                 IPAddress = "127.0.0.1",
                 Port = 502,
-                Active = true
+                Active = true,
+                ValidationError = "Save pending.",
+                LastTestResult = string.Empty
             };
 
-            SaveDevice(newDevice);
-            LoadDevices();
-            userGrid.ItemsSource = null;
-            userGrid.ItemsSource = _devices;
-            Growl.Success("Device created.");
+            _devices.Add(newDevice);
+            RefreshGrid();
+            Growl.Success("New device row added. Save to persist.");
         }
 
         /// <summary>
@@ -205,16 +226,84 @@ namespace IOBusMonitor
         {
             if (userGrid.SelectedItem is ModbusTCPDevice selected)
             {
-                DeleteDevice(selected);
-                LoadDevices();
-                userGrid.ItemsSource = null;
-                userGrid.ItemsSource = _devices;
+                if (selected.Id == 0)
+                {
+                    _devices.Remove(selected);
+                    RefreshGrid();
+                }
+                else
+                {
+                    DeleteDevice(selected);
+                    LoadDevices();
+                    userGrid.ItemsSource = null;
+                    userGrid.ItemsSource = _devices;
+                }
+
                 Growl.Success("Device deleted.");
             }
             else
             {
                 Growl.Warning("Please select a device to delete.");
             }
+        }
+
+        private async void btnTestConnection_Click(object sender, RoutedEventArgs e)
+        {
+            CommitGridEdits();
+
+            var selected = userGrid.SelectedItem as ModbusTCPDevice;
+            if (selected == null)
+            {
+                Growl.Warning("Please select a device to test.");
+                return;
+            }
+
+            selected.ValidationError = AdminWorkflowService.Validate(selected, _devices);
+            if (!string.IsNullOrWhiteSpace(selected.ValidationError))
+            {
+                selected.LastTestResult = "Validation failed.";
+                RefreshGrid();
+                Growl.Warning(selected.ValidationError);
+                return;
+            }
+
+            selected.LastTestResult = "Testing connection...";
+            RefreshGrid();
+
+            string result = await AdminWorkflowService.TestConnectionAsync(selected);
+            selected.LastTestResult = result;
+            RefreshGrid();
+
+            if (result == "Connection OK.")
+                Growl.Success(result);
+            else
+                Growl.Warning(result);
+        }
+
+        private void CommitGridEdits()
+        {
+            userGrid.CommitEdit(DataGridEditingUnit.Cell, true);
+            userGrid.CommitEdit(DataGridEditingUnit.Row, true);
+        }
+
+        private bool ValidateRows()
+        {
+            bool hasErrors = false;
+
+            foreach (var device in _devices)
+            {
+                device.ValidationError = AdminWorkflowService.Validate(device, _devices);
+                if (!string.IsNullOrWhiteSpace(device.ValidationError))
+                    hasErrors = true;
+            }
+
+            RefreshGrid();
+            return !hasErrors;
+        }
+
+        private void RefreshGrid()
+        {
+            userGrid.Items.Refresh();
         }
     }
 }

@@ -84,7 +84,9 @@ namespace IOBusMonitor
                             {
                                 Id = r.GetInt32(r.GetOrdinal("Id")),
                                 Name = r["Name"].ToString(),
-                                SimenseDeviceId = r.GetInt32(r.GetOrdinal("SimenseDeviceId"))
+                                SimenseDeviceId = r.GetInt32(r.GetOrdinal("SimenseDeviceId")),
+                                ValidationError = string.Empty,
+                                LastTestResult = string.Empty
                             });
                         }
                     }
@@ -158,6 +160,11 @@ namespace IOBusMonitor
                     };
                     break;
 
+                case nameof(SimensPoint.ValidationError):
+                    e.Column.Header = "Validation";
+                    e.Column.IsReadOnly = true;
+                    break;
+
                 default:
                     e.Column.Visibility = Visibility.Hidden;
                     break;
@@ -171,12 +178,12 @@ namespace IOBusMonitor
             var p = new SimensPoint
             {
                 Name = "New Point",
-                SimenseDeviceId = _devices.FirstOrDefault()?.Id ?? 0
+                SimenseDeviceId = _devices.FirstOrDefault()?.Id ?? 0,
+                ValidationError = "Save pending."
             };
-            SavePoint(p);
-            LoadPoints();
-            userGrid.ItemsSource = _points;
-            Growl.Success("Point created.");
+            _points.Add(p);
+            RefreshGrid();
+            Growl.Success("New point row added. Save to persist.");
         }
 
         private void minusActivity_Click(object sender, RoutedEventArgs e)
@@ -188,9 +195,18 @@ namespace IOBusMonitor
                 return;
             }
 
-            DeletePoint(sel);
-            LoadPoints();
-            userGrid.ItemsSource = _points;
+            if (sel.Id == 0)
+            {
+                _points.Remove(sel);
+                RefreshGrid();
+            }
+            else
+            {
+                DeletePoint(sel);
+                LoadPoints();
+                userGrid.ItemsSource = _points;
+            }
+
             Growl.Success("Point deleted.");
         }
 
@@ -198,6 +214,13 @@ namespace IOBusMonitor
         {
             try
             {
+                CommitGridEdits();
+                if (!ValidateRows())
+                {
+                    Growl.Warning("Fix validation errors before saving.");
+                    return;
+                }
+
                 foreach (var p in _points) SavePoint(p);
                 LoadPoints();
                 userGrid.ItemsSource = _points;
@@ -207,6 +230,32 @@ namespace IOBusMonitor
             {
                 Growl.Error($"Error: {ex.Message}");
             }
+        }
+
+        private void CommitGridEdits()
+        {
+            userGrid.CommitEdit(DataGridEditingUnit.Cell, true);
+            userGrid.CommitEdit(DataGridEditingUnit.Row, true);
+        }
+
+        private bool ValidateRows()
+        {
+            bool hasErrors = false;
+
+            foreach (var point in _points)
+            {
+                point.ValidationError = AdminWorkflowService.Validate(point, _points, _devices);
+                if (!string.IsNullOrWhiteSpace(point.ValidationError))
+                    hasErrors = true;
+            }
+
+            RefreshGrid();
+            return !hasErrors;
+        }
+
+        private void RefreshGrid()
+        {
+            userGrid.Items.Refresh();
         }
     }
 }

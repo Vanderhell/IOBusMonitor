@@ -92,7 +92,9 @@ namespace IOBusMonitor
                         {
                             Id = reader.GetInt32(reader.GetOrdinal("Id")),
                             Name = reader["Name"].ToString(),
-                            ModbusRTUDeviceId = reader.GetInt32(reader.GetOrdinal("ModbusRTUDeviceId"))
+                            ModbusRTUDeviceId = reader.GetInt32(reader.GetOrdinal("ModbusRTUDeviceId")),
+                            ValidationError = string.Empty,
+                            LastTestResult = string.Empty
                         });
                     }
                 }
@@ -172,6 +174,11 @@ namespace IOBusMonitor
                     };
                     break;
 
+                case nameof(ModbusRTUPoint.ValidationError):
+                    e.Column.Header = "Validation";
+                    e.Column.IsReadOnly = true;
+                    break;
+
                 default:
                     e.Column.Visibility = Visibility.Hidden;
                     break;
@@ -185,6 +192,13 @@ namespace IOBusMonitor
         {
             try
             {
+                CommitGridEdits();
+                if (!ValidateRows())
+                {
+                    Growl.Warning("Fix validation errors before saving.");
+                    return;
+                }
+
                 foreach (var p in _points)
                     SavePoint(p);
 
@@ -207,14 +221,13 @@ namespace IOBusMonitor
             var newPoint = new ModbusRTUPoint
             {
                 Name = "New Point",
-                ModbusRTUDeviceId = _devices.FirstOrDefault()?.Id ?? 0
+                ModbusRTUDeviceId = _devices.FirstOrDefault()?.Id ?? 0,
+                ValidationError = "Save pending."
             };
 
-            SavePoint(newPoint);
-            LoadPoints();
-            userGrid.ItemsSource = null;
-            userGrid.ItemsSource = _points;
-            Growl.Success("Point created.");
+            _points.Add(newPoint);
+            RefreshGrid();
+            Growl.Success("New point row added. Save to persist.");
         }
 
         /// <summary>
@@ -224,16 +237,51 @@ namespace IOBusMonitor
         {
             if (userGrid.SelectedItem is ModbusRTUPoint selected)
             {
-                DeletePoint(selected);
-                LoadPoints();
-                userGrid.ItemsSource = null;
-                userGrid.ItemsSource = _points;
+                if (selected.Id == 0)
+                {
+                    _points.Remove(selected);
+                    RefreshGrid();
+                }
+                else
+                {
+                    DeletePoint(selected);
+                    LoadPoints();
+                    userGrid.ItemsSource = null;
+                    userGrid.ItemsSource = _points;
+                }
+
                 Growl.Success("Point deleted.");
             }
             else
             {
                 Growl.Warning("Please select a point to delete.");
             }
+        }
+
+        private void CommitGridEdits()
+        {
+            userGrid.CommitEdit(DataGridEditingUnit.Cell, true);
+            userGrid.CommitEdit(DataGridEditingUnit.Row, true);
+        }
+
+        private bool ValidateRows()
+        {
+            bool hasErrors = false;
+
+            foreach (var point in _points)
+            {
+                point.ValidationError = AdminWorkflowService.Validate(point, _points, _devices);
+                if (!string.IsNullOrWhiteSpace(point.ValidationError))
+                    hasErrors = true;
+            }
+
+            RefreshGrid();
+            return !hasErrors;
+        }
+
+        private void RefreshGrid()
+        {
+            userGrid.Items.Refresh();
         }
     }
 }

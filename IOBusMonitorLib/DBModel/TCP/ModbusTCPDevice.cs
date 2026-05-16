@@ -16,6 +16,12 @@ namespace IOBusMonitorLib
         public string IPAddress { get; set; }
         public int Port { get; set; }
 
+        [NotMapped]
+        public string ValidationError { get; set; }
+
+        [NotMapped]
+        public string LastTestResult { get; set; }
+
         public ICollection<ModbusTCPPoint> ModbusTCPPoints { get; set; } = new List<ModbusTCPPoint>();
     }
 

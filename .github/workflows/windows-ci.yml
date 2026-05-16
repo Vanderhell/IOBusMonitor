@@ -1,0 +1,34 @@
+name: windows-ci
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore
+        run: nuget restore .\IOBusMonitor.sln
+
+      - name: Build Debug
+        run: msbuild .\IOBusMonitor.sln /p:Configuration=Debug /p:Platform="Any CPU"
+
+      - name: Run tests
+        shell: powershell
+        run: |
+          $vstest = (Get-ChildItem "${env:ProgramFiles(x86)}\Microsoft Visual Studio" -Recurse -Filter vstest.console.exe | Select-Object -First 1).FullName
+          if (-not $vstest) { throw "vstest.console.exe not found" }
+          & $vstest .\IOBusMonitorLib.Tests\bin\Debug\net472\IOBusMonitorLib.Tests.dll

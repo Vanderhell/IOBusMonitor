@@ -1,4 +1,5 @@
 ﻿using EasyModbus;
+using System.Collections.ObjectModel;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -80,17 +81,22 @@ namespace IOBusMonitorLib
                 DeviceName = point.ModbusRTUDevice.Name,
                 PointName = point.Name,
                 Type = PointType.ModbusRTU,
-                Timestamp = DateTime.Now
+                Timestamp = DateTime.Now,
+                Measurements = new ObservableCollection<MeasurementViewModel>()
             };
 
             foreach (var m in point.RTUMeasurements)
             {
                 object raw = await ReadRegistersAsync(m.Register, m.Quantity, m.BitOrder);
+                if (raw == null)
+                    throw new TimeoutException("Read returned no data for measurement '" + m.Name + "'.");
 
                 float val = 0f;
                 if (raw is ushort u) val = u;
                 else if (raw is float f) val = f;
                 else if (raw is double d) val = (float)d;
+                else
+                    throw new InvalidOperationException("Unsupported Modbus-RTU payload type for measurement '" + m.Name + "'.");
 
                 if (!string.IsNullOrWhiteSpace(m.Condition) &&
                     !m.Condition.Trim().Equals("value", StringComparison.OrdinalIgnoreCase))
@@ -121,7 +127,7 @@ namespace IOBusMonitorLib
         // --------------------------------------------------------------------
         // Helpers for 32-/64-bit conversions
         // --------------------------------------------------------------------
-        private static float ConvertTwoWordsToFloat(ushort[] w, BitOrder order)
+        internal static float ConvertTwoWordsToFloat(ushort[] w, BitOrder order)
         {
             uint c = order == BitOrder.Swapped
                 ? ((uint)w[0] << 16) | w[1]
@@ -129,7 +135,7 @@ namespace IOBusMonitorLib
             return BitConverter.ToSingle(BitConverter.GetBytes(c), 0);
         }
 
-        private static double ConvertFourWordsToDouble(ushort[] w, BitOrder order)
+        internal static double ConvertFourWordsToDouble(ushort[] w, BitOrder order)
         {
             ulong c = order == BitOrder.Swapped
                 ? ((ulong)w[0] << 48) | ((ulong)w[1] << 32) |

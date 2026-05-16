@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -61,7 +62,9 @@ namespace IOBusMonitor
                                 Rack = reader.GetInt32(reader.GetOrdinal("Rack")),
                                 Slot = reader.GetInt32(reader.GetOrdinal("Slot")),
                                 CpuType = (CpuType)Enum.Parse(typeof(CpuType), reader["CpuType"].ToString()),
-                                Active = reader.GetInt32(reader.GetOrdinal("Active")) == 1
+                                Active = reader.GetInt32(reader.GetOrdinal("Active")) == 1,
+                                ValidationError = string.Empty,
+                                LastTestResult = string.Empty
                             });
                         }
                     }
@@ -164,6 +167,16 @@ namespace IOBusMonitor
                     };
                     break;
 
+                case nameof(SimensDevice.ValidationError):
+                    e.Column.Header = "Validation";
+                    e.Column.IsReadOnly = true;
+                    break;
+
+                case nameof(SimensDevice.LastTestResult):
+                    e.Column.Header = "Last Test";
+                    e.Column.IsReadOnly = true;
+                    break;
+
                 default:
                     e.Column.Visibility = Visibility.Hidden;
                     break;
@@ -176,6 +189,13 @@ namespace IOBusMonitor
         {
             try
             {
+                CommitGridEdits();
+                if (!ValidateRows())
+                {
+                    Growl.Warning("Fix validation errors before saving.");
+                    return;
+                }
+
                 foreach (var d in _devices) SaveDevice(d);
 
                 LoadDevices();
@@ -199,30 +219,98 @@ namespace IOBusMonitor
                 Rack = 0,
                 Slot = 1,
                 CpuType = CpuType.S71200,
-                Active = true
+                Active = true,
+                ValidationError = "Save pending.",
+                LastTestResult = string.Empty
             };
 
-            SaveDevice(newDevice);
-            LoadDevices();
-            userGrid.ItemsSource = null;
-            userGrid.ItemsSource = _devices;
-            Growl.Success("Device created.");
+            _devices.Add(newDevice);
+            RefreshGrid();
+            Growl.Success("New device row added. Save to persist.");
         }
 
         private void minusActivity_Click(object sender, RoutedEventArgs e)
         {
             if (userGrid.SelectedItem is SimensDevice selected)
             {
-                DeleteDevice(selected);
-                LoadDevices();
-                userGrid.ItemsSource = null;
-                userGrid.ItemsSource = _devices;
+                if (selected.Id == 0)
+                {
+                    _devices.Remove(selected);
+                    RefreshGrid();
+                }
+                else
+                {
+                    DeleteDevice(selected);
+                    LoadDevices();
+                    userGrid.ItemsSource = null;
+                    userGrid.ItemsSource = _devices;
+                }
+
                 Growl.Success("Device deleted.");
             }
             else
             {
                 Growl.Warning("Please select a device to delete.");
             }
+        }
+
+        private async void btnTestConnection_Click(object sender, RoutedEventArgs e)
+        {
+            CommitGridEdits();
+
+            var selected = userGrid.SelectedItem as SimensDevice;
+            if (selected == null)
+            {
+                Growl.Warning("Please select a device to test.");
+                return;
+            }
+
+            selected.ValidationError = AdminWorkflowService.Validate(selected, _devices);
+            if (!string.IsNullOrWhiteSpace(selected.ValidationError))
+            {
+                selected.LastTestResult = "Validation failed.";
+                RefreshGrid();
+                Growl.Warning(selected.ValidationError);
+                return;
+            }
+
+            selected.LastTestResult = "Testing connection...";
+            RefreshGrid();
+
+            string result = await AdminWorkflowService.TestConnectionAsync(selected);
+            selected.LastTestResult = result;
+            RefreshGrid();
+
+            if (result == "Connection OK.")
+                Growl.Success(result);
+            else
+                Growl.Warning(result);
+        }
+
+        private void CommitGridEdits()
+        {
+            userGrid.CommitEdit(DataGridEditingUnit.Cell, true);
+            userGrid.CommitEdit(DataGridEditingUnit.Row, true);
+        }
+
+        private bool ValidateRows()
+        {
+            bool hasErrors = false;
+
+            foreach (var device in _devices)
+            {
+                device.ValidationError = AdminWorkflowService.Validate(device, _devices);
+                if (!string.IsNullOrWhiteSpace(device.ValidationError))
+                    hasErrors = true;
+            }
+
+            RefreshGrid();
+            return !hasErrors;
+        }
+
+        private void RefreshGrid()
+        {
+            userGrid.Items.Refresh();
         }
     }
 }

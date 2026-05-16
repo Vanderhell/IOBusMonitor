@@ -23,6 +23,12 @@ namespace IOBusMonitorLib
         public bool Active { get; set; }
         public BitOrder BitOrder { get; set; }
 
+        [NotMapped]
+        public string ValidationError { get; set; }
+
+        [NotMapped]
+        public string LastTestResult { get; set; }
+
 
         [ForeignKey("ModbusRTUPointId")]
         public ModbusRTUPoint ModbusRTUPoint { get; set; }

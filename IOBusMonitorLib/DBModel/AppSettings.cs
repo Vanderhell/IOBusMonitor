@@ -28,5 +28,11 @@ namespace IOBusMonitorLib
         /// If <c>null</c> or empty, the default <c>./Data</c> folder is used.
         /// </summary>
         public string PathData { get; set; }
+
+        /// <summary>
+        /// When <c>true</c>, the application runs against synthetic demo data
+        /// and never polls real network or serial devices.
+        /// </summary>
+        public bool DemoModeEnabled { get; set; } = false;
     }
 }

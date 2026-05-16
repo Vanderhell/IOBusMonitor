@@ -20,6 +20,12 @@ namespace IOBusMonitorLib
         [NotMapped]
         public PointType Type => PointType.S7;
 
+        [NotMapped]
+        public string ValidationError { get; set; }
+
+        [NotMapped]
+        public string LastTestResult { get; set; }
+
         public SimensPoint()
         {
 

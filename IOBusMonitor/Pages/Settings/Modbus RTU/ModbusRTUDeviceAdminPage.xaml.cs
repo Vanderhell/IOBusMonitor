@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
+using System.Windows.Data;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 
 namespace IOBusMonitor
 {
@@ -65,7 +65,9 @@ namespace IOBusMonitor
                                 SerialPort = (SerialPortName)Enum.Parse(typeof(SerialPortName), reader["SerialPort"].ToString()),
                                 BaudRate = (BaudRate)Enum.Parse(typeof(BaudRate), reader["BaudRate"].ToString()),
                                 Parity = (SerialParity)Enum.Parse(typeof(SerialParity), reader["Parity"].ToString()),
-                                SlaveId = reader.GetInt32(reader.GetOrdinal("SlaveId"))
+                                SlaveId = reader.GetInt32(reader.GetOrdinal("SlaveId")),
+                                ValidationError = string.Empty,
+                                LastTestResult = string.Empty
                             });
                         }
                     }
@@ -183,6 +185,16 @@ namespace IOBusMonitor
                     e.Column.Header = "Slave ID";
                     break;
 
+                case nameof(ModbusRTUDevice.ValidationError):
+                    e.Column.Header = "Validation";
+                    e.Column.IsReadOnly = true;
+                    break;
+
+                case nameof(ModbusRTUDevice.LastTestResult):
+                    e.Column.Header = "Last Test";
+                    e.Column.IsReadOnly = true;
+                    break;
+
                 default:
                     e.Column.Visibility = Visibility.Hidden;
                     break;
@@ -196,6 +208,13 @@ namespace IOBusMonitor
         {
             try
             {
+                CommitGridEdits();
+                if (!ValidateRows())
+                {
+                    Growl.Warning("Fix validation errors before saving.");
+                    return;
+                }
+
                 foreach (var device in _devices)
                     SaveDevice(device);
 
@@ -223,15 +242,14 @@ namespace IOBusMonitor
                 BaudRate = BaudRate.Baud9600,
                 Parity = SerialParity.None,
                 Active = true,
-                SlaveId = 1
+                SlaveId = 1,
+                ValidationError = "Save pending.",
+                LastTestResult = string.Empty
             };
 
-            SaveDevice(newDevice);
-            LoadDevices();
-            userGrid.ItemsSource = null;
-            userGrid.ItemsSource = _devices;
-
-            Growl.Success("Device added.");
+            _devices.Add(newDevice);
+            RefreshGrid();
+            Growl.Success("New device row added. Save to persist.");
         }
 
         /// <summary>
@@ -241,10 +259,18 @@ namespace IOBusMonitor
         {
             if (userGrid.SelectedItem is ModbusRTUDevice selected)
             {
-                DeleteDevice(selected);
-                LoadDevices();
-                userGrid.ItemsSource = null;
-                userGrid.ItemsSource = _devices;
+                if (selected.Id == 0)
+                {
+                    _devices.Remove(selected);
+                    RefreshGrid();
+                }
+                else
+                {
+                    DeleteDevice(selected);
+                    LoadDevices();
+                    userGrid.ItemsSource = null;
+                    userGrid.ItemsSource = _devices;
+                }
 
                 Growl.Success("Device removed.");
             }
@@ -252,6 +278,61 @@ namespace IOBusMonitor
             {
                 Growl.Warning("Please select a device to remove.");
             }
+        }
+
+        private void btnTestSerialPort_Click(object sender, RoutedEventArgs e)
+        {
+            CommitGridEdits();
+
+            var selected = userGrid.SelectedItem as ModbusRTUDevice;
+            if (selected == null)
+            {
+                Growl.Warning("Please select a device to test.");
+                return;
+            }
+
+            selected.ValidationError = AdminWorkflowService.Validate(selected, _devices);
+            if (!string.IsNullOrWhiteSpace(selected.ValidationError))
+            {
+                selected.LastTestResult = "Validation failed.";
+                RefreshGrid();
+                Growl.Warning(selected.ValidationError);
+                return;
+            }
+
+            selected.LastTestResult = AdminWorkflowService.TestSerialPort(selected);
+            RefreshGrid();
+
+            if (selected.LastTestResult == "Serial port is available.")
+                Growl.Success(selected.LastTestResult);
+            else
+                Growl.Warning(selected.LastTestResult);
+        }
+
+        private void CommitGridEdits()
+        {
+            userGrid.CommitEdit(DataGridEditingUnit.Cell, true);
+            userGrid.CommitEdit(DataGridEditingUnit.Row, true);
+        }
+
+        private bool ValidateRows()
+        {
+            bool hasErrors = false;
+
+            foreach (var device in _devices)
+            {
+                device.ValidationError = AdminWorkflowService.Validate(device, _devices);
+                if (!string.IsNullOrWhiteSpace(device.ValidationError))
+                    hasErrors = true;
+            }
+
+            RefreshGrid();
+            return !hasErrors;
+        }
+
+        private void RefreshGrid()
+        {
+            userGrid.Items.Refresh();
         }
     }
 }

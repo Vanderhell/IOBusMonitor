@@ -22,6 +22,11 @@ namespace IOBusMonitorLib
         private DateTime _timestamp;
         private DateTime _timer;
         private DateTime _lastScan;
+        private DateTime? _lastSuccessUtc;
+        private DateTime? _lastErrorUtc;
+        private string _lastErrorMessage;
+        private int _consecutiveFailures;
+        private PointStatus _status;
         private int _deviceId;
         private int _measurementId;
         private int _pointId;
@@ -100,6 +105,41 @@ namespace IOBusMonitorLib
         {
             get => _lastScan;
             set { if (_lastScan != value) { _lastScan = value; OnPropertyChanged(); } }
+        }
+
+        /// <summary>UTC timestamp of the last successful communication.</summary>
+        public DateTime? LastSuccessUtc
+        {
+            get => _lastSuccessUtc;
+            set { if (_lastSuccessUtc != value) { _lastSuccessUtc = value; OnPropertyChanged(); } }
+        }
+
+        /// <summary>UTC timestamp of the last communication error.</summary>
+        public DateTime? LastErrorUtc
+        {
+            get => _lastErrorUtc;
+            set { if (_lastErrorUtc != value) { _lastErrorUtc = value; OnPropertyChanged(); } }
+        }
+
+        /// <summary>Last known communication error message.</summary>
+        public string LastErrorMessage
+        {
+            get => _lastErrorMessage;
+            set { if (_lastErrorMessage != value) { _lastErrorMessage = value; OnPropertyChanged(); } }
+        }
+
+        /// <summary>Number of consecutive polling failures for this point/device path.</summary>
+        public int ConsecutiveFailures
+        {
+            get => _consecutiveFailures;
+            set { if (_consecutiveFailures != value) { _consecutiveFailures = value; OnPropertyChanged(); } }
+        }
+
+        /// <summary>Current communication status for the point/device path.</summary>
+        public PointStatus Status
+        {
+            get => _status;
+            set { if (_status != value) { _status = value; OnPropertyChanged(); } }
         }
 
         // --------------------------------------------------------------------

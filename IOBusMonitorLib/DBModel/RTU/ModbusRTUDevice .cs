@@ -16,6 +16,13 @@ namespace IOBusMonitorLib
         public BaudRate BaudRate { get; set; }
         public SerialParity Parity { get; set; }
         public int SlaveId { get; set; }
+
+        [NotMapped]
+        public string ValidationError { get; set; }
+
+        [NotMapped]
+        public string LastTestResult { get; set; }
+
         public ICollection<ModbusRTUPoint> ModbusRTUPoints { get; set; } = new List<ModbusRTUPoint>();
     }
 }

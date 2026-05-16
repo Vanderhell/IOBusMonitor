@@ -87,7 +87,8 @@ namespace IOBusMonitor
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         ReadIntervalMs INTEGER,
                         AutoStart BOOLEAN,
-                        PathData TEXT
+                        PathData TEXT,
+                        DemoModeEnabled BOOLEAN DEFAULT 0
                     )",
 
                     // Modbus RTU

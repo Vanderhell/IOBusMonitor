@@ -20,6 +20,12 @@ namespace IOBusMonitorLib
         public int Slot { get; set; }
         public CpuType CpuType { get; set; }
 
+        [NotMapped]
+        public string ValidationError { get; set; }
+
+        [NotMapped]
+        public string LastTestResult { get; set; }
+
         public ICollection<SimensPoint> SimensPoints { get; set; } = new List<SimensPoint>();
 
     }

@@ -1,125 +1,259 @@
 ﻿using IOBusMonitorLib;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
+using System.Windows.Data;
 
 namespace IOBusMonitor
 {
     /// <summary>
-    /// View-model for the real-time dashboard. Groups points by protocol and
-    /// updates collections whenever TimerService broadcasts new data.
+    /// View-model for the live dashboard using a flattened, filterable row model.
     /// </summary>
     public class DashboardViewModel : ViewModelBase
     {
         private readonly TimerService _timerService;
+        private readonly MainViewModel _mainVm;
 
-        public ObservableCollection<PointViewModel> ModbusTCPPoints { get; }
-            = new ObservableCollection<PointViewModel>();
+        public ObservableCollection<DashboardMeasurementRowViewModel> Rows { get; }
+            = new ObservableCollection<DashboardMeasurementRowViewModel>();
 
-        public ObservableCollection<PointViewModel> ModbusRTUPoints { get; }
-            = new ObservableCollection<PointViewModel>();
+        public ICollectionView FilteredRows { get; }
 
-        public ObservableCollection<PointViewModel> SiemensPoints { get; }
-            = new ObservableCollection<PointViewModel>();
+        private string _searchText;
+        private string _selectedProtocolFilter = "All";
+        private string _selectedStatusFilter = "All";
+
+        public IReadOnlyList<string> ProtocolFilters { get; } =
+            new[] { "All", "Modbus TCP", "Modbus RTU", "Siemens S7" };
+
+        public IReadOnlyList<string> StatusFilters { get; } =
+            new[] { "All", "Online", "Connecting", "Timeout", "ReadError", "Disabled", "Offline", "Unknown" };
+
+        public string SearchText
+        {
+            get { return _searchText; }
+            set
+            {
+                if (SetProperty(ref _searchText, value))
+                {
+                    FilteredRows.Refresh();
+                    NotifyEmptyState();
+                }
+            }
+        }
+
+        public string SelectedProtocolFilter
+        {
+            get { return _selectedProtocolFilter; }
+            set
+            {
+                if (SetProperty(ref _selectedProtocolFilter, value))
+                {
+                    FilteredRows.Refresh();
+                    NotifyEmptyState();
+                }
+            }
+        }
+
+        public string SelectedStatusFilter
+        {
+            get { return _selectedStatusFilter; }
+            set
+            {
+                if (SetProperty(ref _selectedStatusFilter, value))
+                {
+                    FilteredRows.Refresh();
+                    NotifyEmptyState();
+                }
+            }
+        }
+
+        public bool HasRows
+        {
+            get { return Rows.Count > 0; }
+        }
+
+        private bool IsMonitoringActive
+        {
+            get { return _mainVm != null && _mainVm.IsMonitoring; }
+        }
+
+        public string EmptyStateTitle
+        {
+            get
+            {
+                if (Rows.Count > 0)
+                    return "No rows match the current filters";
+                if (!IsMonitoringActive)
+                    return "Monitoring is stopped";
+                return "No configured points";
+            }
+        }
+
+        public string EmptyStateMessage
+        {
+            get
+            {
+                if (Rows.Count > 0)
+                    return "Adjust the search text or quick filters to broaden the result set.";
+                if (!IsMonitoringActive)
+                    return "Start monitoring to populate live measurements.";
+                return "Configure devices, points, and measurements, then start monitoring.";
+            }
+        }
 
         public DashboardViewModel()
         {
-            var mainVm = Application.Current.MainWindow?.DataContext as MainViewModel;
-            if (mainVm != null)
+            _mainVm = Application.Current.MainWindow?.DataContext as MainViewModel;
+            if (_mainVm != null)
             {
-                _timerService = mainVm._timerService;
+                _timerService = _mainVm._timerService;
                 if (_timerService != null)
                     _timerService.PointRead += OnPointRead;
+                _mainVm.PropertyChanged += MainVm_PropertyChanged;
             }
+
+            FilteredRows = CollectionViewSource.GetDefaultView(Rows);
+            FilteredRows.Filter = FilterRow;
 
             LoadPoints();
         }
 
-        /// <summary>
-        /// Handler called every time a point is read by TimerService.
-        /// Updates or adds the point in the appropriate collection.
-        /// </summary>
+        private void MainVm_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(MainViewModel.IsMonitoring))
+            {
+                OnPropertyChanged(nameof(EmptyStateTitle));
+                OnPropertyChanged(nameof(EmptyStateMessage));
+            }
+        }
+
         private void OnPointRead(PointViewModel newPoint)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                var target = GetTargetCollection(newPoint.Type);
-                if (target == null) return;
-
-                var existing = target.FirstOrDefault(p =>
-                    p.PointId == newPoint.PointId &&
-                    p.DeviceId == newPoint.DeviceId);
-
-                if (existing == null)
-                {
-                    AttachCommands(newPoint);
-                    target.Add(newPoint);
-                }
-                else
-                {
-                    existing.Measurements.Clear();
-                    foreach (var m in newPoint.Measurements)
-                    {
-                        m.ShowGraphCommand = new RelayCommand(() => ShowGraph(existing, m));
-                        existing.Measurements.Add(m);
-                    }
-
-                    existing.Timestamp = newPoint.Timestamp;
-                    existing.LastScan = newPoint.LastScan;
-                }
+                UpsertRows(newPoint);
+                FilteredRows.Refresh();
+                NotifyEmptyState();
             });
         }
 
-        /// <summary>
-        /// Returns the collection where a point of a given type should be stored.
-        /// </summary>
-        private ObservableCollection<PointViewModel> GetTargetCollection(PointType type)
-        {
-            switch (type)
-            {
-                case PointType.ModbusTCP: return ModbusTCPPoints;
-                case PointType.ModbusRTU: return ModbusRTUPoints;
-                case PointType.S7: return SiemensPoints;
-                default: return null;
-            }
-        }
-
-        /// <summary>
-        /// Loads all points from the database and groups them to avoid duplicates.
-        /// </summary>
         public void LoadPoints()
         {
             var loader = new DataLoaderService();
-            var loadedPoints = loader.LoadAllPointsFromAllDatabases();
+            var loadedPoints = loader.LoadLatestPoints();
 
-            var grouped = loadedPoints
-                .GroupBy(p => new { p.PointId, p.PointName, p.DeviceId, p.Type })
-                .Select(g => g.First())
-                .ToList();
+            Rows.Clear();
+            foreach (var point in loadedPoints)
+                AddRows(point);
 
-            ModbusTCPPoints.Clear();
-            ModbusRTUPoints.Clear();
-            SiemensPoints.Clear();
-
-            foreach (var point in grouped)
-            {
-                AttachCommands(point);
-                var target = GetTargetCollection(point.Type);
-                if (target != null) target.Add(point);
-            }
+            FilteredRows.Refresh();
+            NotifyEmptyState();
         }
 
-        // ---------- Helpers ----------
+        private void AddRows(PointViewModel point)
+        {
+            AttachCommands(point);
+            foreach (var measurement in point.Measurements ?? Enumerable.Empty<MeasurementViewModel>())
+                Rows.Add(BuildRow(point, measurement));
+        }
+
+        private void UpsertRows(PointViewModel point)
+        {
+            var existingRows = Rows
+                .Where(r => r.Point.PointId == point.PointId &&
+                            r.Point.DeviceId == point.DeviceId &&
+                            r.Point.Type == point.Type)
+                .ToList();
+
+            foreach (var row in existingRows)
+                Rows.Remove(row);
+
+            AddRows(point);
+        }
+
+        private bool FilterRow(object item)
+        {
+            var row = item as DashboardMeasurementRowViewModel;
+            if (row == null) return false;
+
+            if (!string.IsNullOrWhiteSpace(SelectedProtocolFilter) &&
+                SelectedProtocolFilter != "All" &&
+                row.Protocol != SelectedProtocolFilter)
+                return false;
+
+            if (!string.IsNullOrWhiteSpace(SelectedStatusFilter) &&
+                SelectedStatusFilter != "All" &&
+                row.StatusDisplay != SelectedStatusFilter)
+                return false;
+
+            if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                var search = SearchText.Trim().ToLowerInvariant();
+                if (string.IsNullOrEmpty(row.SearchText) || !row.SearchText.Contains(search))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private void NotifyEmptyState()
+        {
+            OnPropertyChanged(nameof(HasRows));
+            OnPropertyChanged(nameof(EmptyStateTitle));
+            OnPropertyChanged(nameof(EmptyStateMessage));
+        }
 
         private void AttachCommands(PointViewModel point)
         {
-            point.ShowAllMeasurementsCommand =
-                new RelayCommand(() => ShowGraphAllMeasurements(point));
+            point.ShowAllMeasurementsCommand = new RelayCommand(() => ShowGraphAllMeasurements(point));
 
-            foreach (var m in point.Measurements)
+            foreach (var m in point.Measurements ?? Enumerable.Empty<MeasurementViewModel>())
+                m.ShowGraphCommand = new RelayCommand(() => ShowGraph(point, m));
+        }
+
+        private DashboardMeasurementRowViewModel BuildRow(PointViewModel point, MeasurementViewModel measurement)
+        {
+            string protocol = MapProtocol(point.Type);
+            string status = point.Status.ToString();
+            string valueDisplay = !string.IsNullOrWhiteSpace(measurement.ValueStr)
+                ? measurement.ValueStr
+                : measurement.Value.ToString("F2");
+
+            return new DashboardMeasurementRowViewModel
             {
-                m.ShowGraphCommand =
-                    new RelayCommand(() => ShowGraph(point, m));
+                Point = point,
+                Measurement = measurement,
+                Protocol = protocol,
+                Device = point.DeviceName,
+                PointName = point.PointName,
+                MeasurementName = measurement.Name,
+                Value = measurement.Value,
+                ValueDisplay = valueDisplay,
+                Unit = measurement.Unit,
+                LastScan = point.LastScan,
+                LastScanDisplay = point.LastScan == default(System.DateTime)
+                    ? "No scan"
+                    : point.LastScan.ToString("dd.MM.yyyy HH:mm:ss"),
+                Status = point.Status,
+                StatusDisplay = status,
+                SearchText = (protocol + " " + point.DeviceName + " " + point.PointName + " " +
+                              measurement.Name + " " + measurement.Unit + " " + status + " " +
+                              (point.LastErrorMessage ?? string.Empty)).ToLowerInvariant(),
+                ShowGraphCommand = new RelayCommand(() => ShowGraph(point, measurement))
+            };
+        }
+
+        private static string MapProtocol(PointType type)
+        {
+            switch (type)
+            {
+                case PointType.ModbusTCP: return "Modbus TCP";
+                case PointType.ModbusRTU: return "Modbus RTU";
+                case PointType.S7: return "Siemens S7";
+                default: return "Unknown";
             }
         }
 

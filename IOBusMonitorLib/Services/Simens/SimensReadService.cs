@@ -50,42 +50,43 @@ namespace IOBusMonitorLib
 
         /// <summary>
         /// Reads a single address and converts the raw value to <c>double</c>.
-        /// Returns <c>0.0</c> on communication failure.
         /// </summary>
         public double ReadValue(SimensMeasurement m)
         {
-            try
+            if (plc == null || !plc.IsConnected)
+                throw new TimeoutException("PLC is not connected.");
+
+            object raw = plc.Read(m.Address);
+            if (raw == null)
+                throw new TimeoutException("Read returned no data for address '" + m.Address + "'.");
+
+            switch (m.InferredDataType)
             {
-                if (plc == null || !plc.IsConnected) return 0d;
+                case DataType.Bit: return Convert.ToDouble((bool)raw);
+                case DataType.Int: return Convert.ToDouble((short)raw);
+                case DataType.Word: return Convert.ToDouble((ushort)raw);
+                case DataType.Byte: return Convert.ToDouble((byte)raw);
+                case DataType.Double: return Convert.ToDouble(raw);
 
-                object raw = plc.Read(m.Address);
-                if (raw == null) return 0d;
+                case DataType.Real:
+                    if (raw is float f) return f;
+                    if (raw is double d) return (float)d;
+                    if (raw is uint ui) return BitConverter.ToSingle(BitConverter.GetBytes(ui), 0);
+                    if (raw is int i) return BitConverter.ToSingle(BitConverter.GetBytes(i), 0);
+                    if (raw is byte[] b && b.Length == 4) return BitConverter.ToSingle(b, 0);
+                    throw new InvalidCastException("Unexpected REAL source type: " + raw.GetType().Name);
 
-                switch (m.InferredDataType)
-                {
-                    case DataType.Bit: return Convert.ToDouble((bool)raw);
-                    case DataType.Int: return Convert.ToDouble((short)raw);
-                    case DataType.Word: return Convert.ToDouble((ushort)raw);
-                    case DataType.Byte: return Convert.ToDouble((byte)raw);
-                    case DataType.Double: return Convert.ToDouble(raw);
-
-                    case DataType.Real:
-                        // Handle multiple possible underlying formats
-                        if (raw is float f) return f;
-                        if (raw is double d) return (float)d;
-                        if (raw is uint ui) return BitConverter.ToSingle(BitConverter.GetBytes(ui), 0);
-                        if (raw is int i) return BitConverter.ToSingle(BitConverter.GetBytes(i), 0);
-                        if (raw is byte[] b && b.Length == 4) return BitConverter.ToSingle(b, 0);
-                        throw new InvalidCastException("Unexpected REAL source type: " + raw.GetType().Name);
-
-                    default:
-                        throw new NotSupportedException("Unsupported data type: " + m.InferredDataType);
-                }
+                default:
+                    throw new NotSupportedException("Unsupported data type: " + m.InferredDataType);
             }
-            catch
-            {
-                return 0d;
-            }
+        }
+
+        /// <summary>
+        /// Retrieves fresh measurements for an entire <paramref name="point"/>.
+        /// </summary>
+        public Task<PointViewModel> LoadPointDataAsync(SimensPoint point)
+        {
+            return LoadPLCActualDataAsync(point);
         }
 
         /// <summary>

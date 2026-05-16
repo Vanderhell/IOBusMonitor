@@ -6,8 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Data.SQLite;
-using System.IO;
 using System.Linq;
 using System.Windows.Input;
 
@@ -19,8 +17,15 @@ namespace IOBusMonitor
     /// </summary>
     public class HistoryPageViewModel : ViewModelBase
     {
+        private readonly DataLoaderService _dataLoader = new DataLoaderService();
+
         public ObservableCollection<PointViewModel> AllPoints { get; }
             = new ObservableCollection<PointViewModel>();
+
+        public DateTime RangeStart { get; set; } = DateTime.Now.AddDays(-7);
+        public DateTime RangeEnd { get; set; } = DateTime.Now;
+        public int HistoryRowLimit { get; set; } = 5000;
+        public int ChartPointLimit { get; set; } = 1000;
 
         private PointViewModel _selectedPoint;
         public PointViewModel SelectedPoint
@@ -41,9 +46,7 @@ namespace IOBusMonitor
 
         public HistoryPageViewModel()
         {
-            // Load all points from every device / database
-            var loader = new DataLoaderService();
-            var loadedPoints = loader.LoadAllPointsFromAllDatabases();
+            var loadedPoints = _dataLoader.LoadLatestPoints();
 
             // De-duplicate by PointId + PointName + DeviceId
             var grouped = loadedPoints
@@ -143,48 +146,18 @@ namespace IOBusMonitor
             PlotModel.InvalidatePlot(true);
         }
 
-        /// <summary>
-        /// Loads historical values for a point from every monthly SQLite DB in /Data.
-        /// </summary>
         private List<MeasurementViewModel> LoadMeasurementHistory(PointViewModel point)
         {
-            var history = new List<MeasurementViewModel>();
-            string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
-            if (!Directory.Exists(folder)) return history;
-
-            foreach (var dbFile in Directory.GetFiles(folder, "Data_*.db"))
+            return _dataLoader.LoadMeasurementHistory(new MeasurementQueryOptions
             {
-                using (var conn = new SQLiteConnection($"Data Source={dbFile};"))
-                {
-                    conn.Open();
-                    using (var cmd = conn.CreateCommand())
-                    {
-                        cmd.CommandText = @"SELECT Timestamp, MeasurementId, MeasurementName, Value, Unit
-                                            FROM MeasurementData
-                                            WHERE DeviceId = @DeviceId AND PointId = @PointId
-                                            ORDER BY Timestamp";
-                        cmd.Parameters.AddWithValue("@DeviceId", point.DeviceId);
-                        cmd.Parameters.AddWithValue("@PointId", point.PointId);
-
-                        using (var r = cmd.ExecuteReader())
-                        {
-                            while (r.Read())
-                            {
-                                history.Add(new MeasurementViewModel
-                                {
-                                    Id = r.GetInt32(r.GetOrdinal("MeasurementId")),
-                                    Name = r["MeasurementName"].ToString(),
-                                    Value = r.GetDouble(r.GetOrdinal("Value")),
-                                    Unit = r["Unit"].ToString(),
-                                    Timestamp = DateTime.Parse(r["Timestamp"].ToString()),
-                                    IsVisible = true
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-            return history;
+                RangeStart = RangeStart,
+                RangeEnd = RangeEnd,
+                PointType = point.Type,
+                DeviceId = point.DeviceId,
+                PointId = point.PointId,
+                RowLimit = HistoryRowLimit,
+                MaxChartPoints = ChartPointLimit
+            });
         }
     }
 }

@@ -20,6 +20,12 @@ namespace IOBusMonitorLib
         public string Address { get; set; }
 
         [NotMapped]
+        public string ValidationError { get; set; }
+
+        [NotMapped]
+        public string LastTestResult { get; set; }
+
+        [NotMapped]
         public DataType InferredDataType => SimensAddressHelper.GetDataTypeFromAddress(Address);
         [NotMapped]
         public string InferredDataTypeName => InferredDataType.ToString();
