@@ -29,6 +29,27 @@ jobs:
       - name: Run tests
         shell: powershell
         run: |
-          $vstest = (Get-ChildItem "${env:ProgramFiles(x86)}\Microsoft Visual Studio" -Recurse -Filter vstest.console.exe | Select-Object -First 1).FullName
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          if (Test-Path $vswhere) {
+            $vsRoot = & $vswhere -latest -products * -property installationPath
+          }
+
+          $searchRoots = @()
+          if ($vsRoot) { $searchRoots += (Join-Path $vsRoot "Common7\IDE") }
+          $searchRoots += @(
+            "${env:ProgramFiles}\Microsoft Visual Studio",
+            "${env:ProgramFiles(x86)}\Microsoft Visual Studio"
+          ) | Where-Object { Test-Path $_ }
+
+          $vstest = $null
+          foreach ($root in $searchRoots) {
+            $candidate = Get-ChildItem $root -Recurse -Filter vstest.console.exe -ErrorAction SilentlyContinue |
+              Select-Object -First 1
+            if ($candidate) {
+              $vstest = $candidate.FullName
+              break
+            }
+          }
+
           if (-not $vstest) { throw "vstest.console.exe not found" }
           & $vstest .\IOBusMonitorLib.Tests\bin\Debug\net472\IOBusMonitorLib.Tests.dll
