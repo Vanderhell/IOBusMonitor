@@ -2,48 +2,81 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:oxy="http://oxyplot.org/wpf"
-      Background="White">
+      Background="{StaticResource ShellBrush.Background}">
 
-    <Grid>
+    <Grid Margin="16">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="320"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Selection panel -->
-        <StackPanel Grid.Column="0" Margin="10">
-            <TextBlock Text="Historical Points"
-                       FontSize="18"
-                       FontWeight="Bold"
-                       Margin="0,0,0,10"/>
+        <Border Grid.Column="0"
+                Style="{StaticResource ShellCardStyle}"
+                Padding="18"
+                Margin="0,0,16,0">
+            <StackPanel>
+                <TextBlock Text="History Explorer" Style="{StaticResource ShellPageTitleStyle}"/>
+                <TextBlock Text="Select a configured point, then load archived samples and control which measurements are visible on the chart."
+                           Margin="0,6,0,0"
+                           Style="{StaticResource ShellPageSubtitleStyle}"/>
 
-            <ListBox ItemsSource="{Binding AllPoints}"
-                     SelectedItem="{Binding SelectedPoint}"
-                     DisplayMemberPath="PointName"
-                     Height="300"/>
+                <TextBlock Text="Points"
+                           Margin="0,22,0,8"
+                           FontSize="14"
+                           FontWeight="SemiBold"/>
+                <ListBox ItemsSource="{Binding AllPoints}"
+                         SelectedItem="{Binding SelectedPoint}"
+                         DisplayMemberPath="PointName"
+                         Height="320"
+                         BorderBrush="{StaticResource ShellBrush.Border}"/>
 
-            <Button Content="Load History"
-                    Command="{Binding LoadHistoryCommand}"
-                    Margin="0,10,0,0"/>
+                <Button Content="Load History"
+                        Command="{Binding LoadHistoryCommand}"
+                        Margin="0,14,0,0"
+                        Style="{StaticResource ShellActionButtonStyle}"/>
 
-            <!-- Measurement visibility toggle -->
-            <TextBlock Text="Measurements"
-                       FontWeight="Bold"
-                       Margin="0,10,0,0"/>
+                <TextBlock Text="Measurements"
+                           Margin="0,22,0,8"
+                           FontSize="14"
+                           FontWeight="SemiBold"/>
 
-            <ItemsControl ItemsSource="{Binding SelectedPoint.Measurements}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <CheckBox Content="{Binding Name}"
-                                  IsChecked="{Binding IsVisible, Mode=TwoWay}"/>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </StackPanel>
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              MaxHeight="260">
+                    <ItemsControl ItemsSource="{Binding SelectedPoint.Measurements}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Content="{Binding Name}"
+                                          Margin="0,0,0,8"
+                                          IsChecked="{Binding IsVisible, Mode=TwoWay}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </StackPanel>
+        </Border>
 
-        <!-- Chart -->
-        <oxy:PlotView Grid.Column="1"
-                      Model="{Binding PlotModel}"
-                      Margin="10"/>
+        <Border Grid.Column="1"
+                Style="{StaticResource ShellCardStyle}"
+                Padding="16">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel>
+                    <TextBlock Text="Trend Chart"
+                               FontSize="18"
+                               FontWeight="SemiBold"/>
+                    <TextBlock Text="Archive data is loaded from local SQLite files in the configured data path."
+                               Margin="0,4,0,0"
+                               Style="{StaticResource ShellPageSubtitleStyle}"/>
+                </StackPanel>
+
+                <oxy:PlotView Grid.Row="1"
+                              Margin="0,16,0,0"
+                              Model="{Binding PlotModel}"/>
+            </Grid>
+        </Border>
     </Grid>
 </Page>

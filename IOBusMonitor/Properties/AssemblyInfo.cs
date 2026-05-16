@@ -7,11 +7,11 @@ using System.Windows;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("IOBusMonitor")]
-[assembly: AssemblyDescription("Monitor of input-output buses")]
+[assembly: AssemblyDescription("Industrial desktop monitor for Modbus TCP, Modbus RTU, and Siemens S7 field data.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("MyCompany")]
+[assembly: AssemblyCompany("IOBusMonitor Contributors")]
 [assembly: AssemblyProduct("IOBusMonitor")]
-[assembly: AssemblyCopyright("Copyright ©  2025")]
+[assembly: AssemblyCopyright("Copyright © 2025 IOBusMonitor Contributors")]
 [assembly: AssemblyTrademark("IOBusMonitor")]
 [assembly: AssemblyCulture("")]
 
@@ -49,5 +49,6 @@ using System.Windows;
 //
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: NeutralResourcesLanguage("sk-SK")]
+[assembly: AssemblyInformationalVersion("1.0.0")]
+[assembly: NeutralResourcesLanguage("en-US")]
 [assembly: Guid("113ee710-40ef-44b4-8986-c21a7ea600ee")]

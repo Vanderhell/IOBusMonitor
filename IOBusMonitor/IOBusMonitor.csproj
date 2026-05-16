@@ -157,6 +157,8 @@
     <Compile Include="Converter\AndConverter.cs" />
     <Compile Include="Converter\InverseBoolConverter.cs" />
     <Compile Include="InstanceManager.cs" />
+    <Compile Include="AppVersionProvider.cs" />
+    <Compile Include="Admin\AdminWorkflowService.cs" />
     <Compile Include="Pages\AboutApp.xaml.cs">
       <DependentUpon>AboutApp.xaml</DependentUpon>
     </Compile>
@@ -200,6 +202,7 @@
       <DependentUpon>SimensPointAdminPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\DashboardViewModel.cs" />
+    <Compile Include="ViewModels\DashboardMeasurementRowViewModel.cs" />
     <Compile Include="ViewModels\GraphViewModel.cs" />
     <Compile Include="ViewModels\HistoryPageViewModel.cs" />
     <Compile Include="Window\GraphWindow.xaml.cs">
@@ -283,6 +286,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="SplashScreen.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\ShellTheme.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

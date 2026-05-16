@@ -3,75 +3,113 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:oxy="http://oxyplot.org/wpf"
         xmlns:hc="https://handyorg.github.io/handycontrol"
-        Title="Graph" Height="500" Width="800">
+        Title="Graph"
+        Height="620"
+        Width="980"
+        Style="{StaticResource ShellWindowStyle}">
 
-    <DockPanel>
-        <!-- Top bar with live-update toggle -->
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="5">
-            <ToggleButton Content="Live update"
-                          IsChecked="{Binding IsLiveTracking, Mode=TwoWay}"
-                          ToolTip="Enable / disable automatic plot refresh"
-                          Padding="10,5"/>
-        </StackPanel>
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280" x:Name="MeasurementListColumn"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200" x:Name="MeasurementListColumn"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <Border Grid.Row="0"
+                Grid.ColumnSpan="2"
+                Style="{StaticResource ShellCardStyle}"
+                Padding="16"
+                Margin="0,0,0,16">
+            <DockPanel LastChildFill="False">
+                <StackPanel DockPanel.Dock="Left">
+                    <TextBlock Text="Point Trend" Style="{StaticResource ShellPageTitleStyle}"/>
+                    <TextBlock Text="Toggle measurement visibility and keep the plot live while values continue to arrive."
+                               Margin="0,4,0,0"
+                               Style="{StaticResource ShellPageSubtitleStyle}"/>
+                </StackPanel>
 
-            <!-- Measurement visibility list -->
-            <StackPanel Grid.Column="0" Margin="5" x:Name="MeasurementListPanel">
-                <TextBlock Text="Measurements" FontWeight="Bold" Margin="0,0,0,5"/>
-                <ItemsControl ItemsSource="{Binding Point.Measurements}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <ToggleButton Content="{Binding Name}"
-                                          IsChecked="{Binding IsVisible, Mode=TwoWay}"
-                                          Checked="CheckBox_Checked"
-                                          Unchecked="CheckBox_Checked"
-                                          FontSize="18"
-                                          Padding="8,4"
-                                          Margin="0,4"
-                                          BorderThickness="1"
-                                          HorizontalAlignment="Stretch">
-                                <ToggleButton.Style>
-                                    <Style TargetType="ToggleButton">
-                                        <!-- checked = primary blue -->
-                                        <Setter Property="Background" Value="#FF007ACC"/>
-                                        <Setter Property="Foreground" Value="White"/>
-                                        <Setter Property="BorderBrush" Value="#FF007ACC"/>
-                                        <Setter Property="Cursor" Value="Hand"/>
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="ToggleButton">
-                                                    <Border Background="{TemplateBinding Background}"
-                                                            BorderBrush="{TemplateBinding BorderBrush}"
-                                                            BorderThickness="{TemplateBinding BorderThickness}"
-                                                            CornerRadius="4">
-                                                        <ContentPresenter HorizontalAlignment="Center"
-                                                                          VerticalAlignment="Center"/>
-                                                    </Border>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <!-- unchecked = red -->
-                                        <Style.Triggers>
-                                            <Trigger Property="IsChecked" Value="False">
-                                                <Setter Property="Background" Value="#FFB71C1C"/>
-                                                <Setter Property="BorderBrush" Value="#FFB71C1C"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </ToggleButton.Style>
-                            </ToggleButton>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <ToggleButton DockPanel.Dock="Right"
+                              Content="Live Update"
+                              IsChecked="{Binding IsLiveTracking, Mode=TwoWay}"
+                              ToolTip="Enable or disable automatic plot refresh"
+                              Padding="12,6"
+                              Margin="12,0,0,0"
+                              VerticalAlignment="Center"/>
+            </DockPanel>
+        </Border>
+
+        <Border Grid.Row="1"
+                Grid.Column="0"
+                Margin="0,0,16,0"
+                Style="{StaticResource ShellCardStyle}"
+                Padding="16"
+                x:Name="MeasurementListPanel">
+            <StackPanel>
+                <TextBlock Text="Measurements"
+                           FontSize="18"
+                           FontWeight="SemiBold"/>
+                <TextBlock Text="Checked measurements remain visible on the chart."
+                           Margin="0,4,0,0"
+                           Style="{StaticResource ShellPageSubtitleStyle}"/>
+
+                <ScrollViewer Margin="0,16,0,0"
+                              VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Point.Measurements}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ToggleButton Content="{Binding Name}"
+                                              IsChecked="{Binding IsVisible, Mode=TwoWay}"
+                                              Checked="CheckBox_Checked"
+                                              Unchecked="CheckBox_Checked"
+                                              FontSize="14"
+                                              Padding="10,8"
+                                              Margin="0,0,0,8"
+                                              BorderThickness="1"
+                                              HorizontalAlignment="Stretch">
+                                    <ToggleButton.Style>
+                                        <Style TargetType="ToggleButton">
+                                            <Setter Property="Background" Value="{StaticResource ShellBrush.Primary}"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="BorderBrush" Value="{StaticResource ShellBrush.Primary}"/>
+                                            <Setter Property="Cursor" Value="Hand"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="ToggleButton">
+                                                        <Border Background="{TemplateBinding Background}"
+                                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                                CornerRadius="8">
+                                                            <ContentPresenter HorizontalAlignment="Center"
+                                                                              VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsChecked" Value="False">
+                                                    <Setter Property="Background" Value="{StaticResource ShellBrush.SurfaceAlt}"/>
+                                                    <Setter Property="Foreground" Value="{StaticResource ShellBrush.Text}"/>
+                                                    <Setter Property="BorderBrush" Value="{StaticResource ShellBrush.Border}"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ToggleButton.Style>
+                                </ToggleButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
             </StackPanel>
+        </Border>
 
-            <!-- Plot -->
-            <oxy:PlotView Grid.Column="1" Model="{Binding PlotModel}" Margin="5"/>
-        </Grid>
-    </DockPanel>
+        <Border Grid.Row="1"
+                Grid.Column="1"
+                Style="{StaticResource ShellCardStyle}"
+                Padding="12">
+            <oxy:PlotView Model="{Binding PlotModel}"/>
+        </Border>
+    </Grid>
 </Window>

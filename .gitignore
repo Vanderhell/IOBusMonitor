@@ -53,5 +53,19 @@ dkms.conf
 
 /bin
 /obj
+**/bin/
+**/obj/
 /.vs
 /packages
+/dist
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+Logs/
+Settings/
+Data/

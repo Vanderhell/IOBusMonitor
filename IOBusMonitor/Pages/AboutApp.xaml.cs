@@ -10,6 +10,12 @@ namespace IOBusMonitor
         public AboutApp()
         {
             InitializeComponent();
+            DataContext = this;
+        }
+
+        public string AppVersionText
+        {
+            get { return "Version: " + AppVersionProvider.GetDisplayVersion(); }
         }
     }
 }

@@ -2,13 +2,42 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Title="Home"
-      Background="#FFDCF0F5">
+      Background="{StaticResource ShellBrush.Background}">
 
-    <Grid>
-        <!-- Background/intro image -->
-        <Image Source="/Assets/home.png"
-               Stretch="Uniform"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center"/>
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel>
+            <TextBlock Text="Welcome" Style="{StaticResource ShellPageTitleStyle}"/>
+            <TextBlock Text="Use the left navigation to open the dashboard, history, or configuration pages. Enable demo mode if you want to explore the workflow without PLC hardware."
+                       Margin="0,6,0,0"
+                       Style="{StaticResource ShellPageSubtitleStyle}"/>
+        </StackPanel>
+
+        <Border Grid.Row="1"
+                Margin="0,16,0,0"
+                Style="{StaticResource ShellCardStyle}"
+                Padding="18">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="Workspace Overview"
+                           FontSize="18"
+                           FontWeight="SemiBold"/>
+
+                <Image Grid.Row="1"
+                       Margin="0,16,0,0"
+                       Source="/Assets/home.png"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
     </Grid>
 </Page>

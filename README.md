@@ -1,132 +1,163 @@
+[![Windows CI](https://github.com/Vanderhell/IOBusMonitor/actions/workflows/windows-ci.yml/badge.svg)](https://github.com/Vanderhell/IOBusMonitor/actions/workflows/windows-ci.yml)
+[![License: MIT](https://img.shields.io/github/license/Vanderhell/IOBusMonitor)](LICENSE)
+
 # IOBusMonitor
 
-IOBusMonitor is a small Windows desktop utility for **querying, logging, and visualising field‑bus data** from Modbus TCP / Modbus RTU devices and Siemens S7 PLCs.  
-The application is designed to be compiled and run as a single executable without external services or complex deployment steps.
+Portable Windows desktop tool for **field-bus monitoring, short-term logging, and troubleshooting** of Modbus TCP, Modbus RTU, and Siemens S7 data.
 
----
+> Status: active repair and usability work. The repository is usable, but the public documentation stays conservative and only describes implemented behavior.
 
-# Home
+## What It Is
 
-![Live view](IOBusMonitor/Assets/README/home.png)
+IOBusMonitor helps service technicians, maintenance engineers, and system integrators:
 
-# Live Dashboard
+- inspect live PLC/register values,
+- log measurements into local SQLite archives,
+- review recent history with built-in charts,
+- configure devices, points, and measurements inside the app,
+- evaluate the workflow without hardware by using demo mode.
 
-![Live view](IOBusMonitor/Assets/README/dashboard.png)
+It is designed for workstation use during commissioning, troubleshooting, and short-term observation of industrial signals.
 
-# Dashboard - Graph
+## What It Is Not
 
-![Live view](IOBusMonitor/Assets/README/graph.png)
+- Not a SCADA replacement.
+- Not a safety controller.
+- Not a certified historian.
+- Not a PLC programming environment.
+- Not a write/control tool for PLC outputs unless a future feature explicitly implements and documents that behavior.
 
+The current documented workflow is read-oriented monitoring and local logging.
 
-## 1  Overview
+## Target Users
 
-| Topic            | Detail |
-|------------------|--------|
-| **Target OS**    | Windows 10/11 (x64) |
-| **UI Framework** | WPF (.NET Framework 4.8, C# 7.3) |
-| **Storage**      | Local SQLite databases (one file per day) |
-| **Protocols**    | Modbus TCP, Modbus RTU, Siemens S7 (S7‑200/300/400/1200/1500, LOGO 0BA8) |
-| **License**      | MIT |
+- System integrators
+- Maintenance engineers
+- Service technicians
+- Automation developers who need a quick diagnostic desktop tool
 
-The executable maintains two working folders next to itself:
+## Supported Protocols
 
-```
-Settings/Settings.db   # devices, points, application options
-Data/Data_YYYYMMDD.db  # daily measurement archive (SQLite)
-```
+| Protocol | Current use | Notes |
+|---|---|---|
+| Modbus TCP | Read-only polling | device, point, and measurement administration available in-app |
+| Modbus RTU | Read-only polling | serial port settings and slave-based polling supported |
+| Siemens S7 | Read-only polling | S7.Net-based read path with in-app device/point/measurement administration |
 
-No external installer is required—copy the folder to any workstation, double‑click **IOBusMonitor.exe**, and begin polling.
+## Core Features
 
----
+- Live dashboard for the latest values grouped from configured devices and points
+- Local daily SQLite archive in `Data/Data_yyyyMMdd.db`
+- History view with bounded loading and chart downsampling
+- In-app administration for devices, points, and measurements
+- Demo mode that seeds sample configuration and generates synthetic live values locally
+- Portable packaging script for clean `Release|x64` ZIP creation
 
-## 2  Features
+## Quick Links
 
-* **Live dashboard** – realtime list of the most recent values per point.
-* **History view** – ad‑hoc line charts from the daily SQLite archives.
-* **In‑app administration** – create/edit devices, points, and measurements without editing JSON or XML.
-* **Self‑contained data** – all numeric samples are written to SQLite; you can analyse them later with Python, Excel, etc.
-* **Protocol plug‑ins** – new buses can be supported by adding one C# reader class that returns a `PointViewModel`.
+- Getting started: [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)
+- Configuration guide: [docs/CONFIGURATION.md](docs/CONFIGURATION.md)
+- Troubleshooting: [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
+- FAQ: [docs/FAQ.md](docs/FAQ.md)
+- Build guide: [docs/BUILD.md](docs/BUILD.md)
+- Release packaging: [docs/RELEASE.md](docs/RELEASE.md)
+- Services: [docs/SERVICES.md](docs/SERVICES.md)
+- Testing notes: [docs/TESTING.md](docs/TESTING.md)
+- Support model: [SUPPORT.md](SUPPORT.md)
 
----
+## Start Here
 
-## 3  Getting Started
+### Evaluate Without PLC Hardware
 
-1. **Clone or download** the repository and open *IOBusMonitor.sln* in Visual Studio 2019 (or newer).
-2. Press **F5** to build and launch in Debug mode.
-3. On first run the program creates the default `Settings/Settings.db` and an empty `Data` folder.
-4. Use the **Administration** menu to add a device → point → measurement chain.
-5. Click the green **Start** button (▶︎) to begin polling.
+1. Build and launch the app on Windows.
+2. On first run, let it create `Settings/Settings.db` and the default `Data` folder.
+3. Click `Enable Demo Mode` from the shell prompt, or open `Settings` and enable `Demo mode`.
+4. Click `Start Monitoring`.
+5. Open the dashboard and history pages to inspect synthetic live data and archived samples.
 
-> **Tip** – If you do not have hardware available, call
-> `TestDataGenerator.GenerateTestData()` once (e.g. from the Immediate Window).
-> The method writes a dummy `Data_YYYYMMDD.db` with random values so you can
-> explore the UI.
+### Build From Source
 
----
+Windows prerequisites:
 
-## 4  Project Structure
-
-```
-IOBusMonitor.sln         # solution file
-├─ IOBusMonitor          # WPF views, windows, XAML pages
-├─ IOBusMonitorLib       # protocol readers, view‑models, storage, helpers
-└─ ShortcutTool          # cmd helper
-```
-
-### Runtime layout
-
-```
-IOBusMonitor.exe
-Settings/Settings.db      # persistent configuration & definitions
-Data/                     # rolling SQLite archives (one per day)
-Logs/                     # optional diagnostic output
-```
-
----
-
-## 5  Extending the Application
-
-1. **Define models** (if required) for the new protocol’s devices/points.
-2. **Implement a reader** with a single public method that returns `PointViewModel`:
-   ```csharp
-   public Task<PointViewModel> LoadPointDataAsync(MyPoint point) { /* … */ }
-   ```
-3. **Register the reader** in `TimerService` so it is called during the scan loop.
-4. Duplicate the CRUD XAML pages for devices/points/measurements and adjust the SQL queries.
-
-All other layers—storage, live dashboard, history charts—are protocol‑agnostic and work automatically once you populate `PointViewModel` instances.
-
----
-
-## 6  Building a Release
+- Windows 10/11 x64
+- Visual Studio 2019+ or Build Tools with `msbuild`
+- NuGet CLI on `PATH`
 
 ```powershell
-# from repository root
-msbuild IOBusMonitor.sln -p:Configuration=Release
+nuget restore .\IOBusMonitor.sln
+msbuild .\IOBusMonitor.sln /p:Configuration=Release /p:Platform=x64
 ```
 
-Copy the resulting `IOBusMonitor\bin\Release` folder to the target machine. No installer or registry keys are required.
+See [docs/BUILD.md](docs/BUILD.md) for environment details and current WSL limitations.
 
----
+### Create A Portable ZIP
 
-## 7  Contributing
+```powershell
+.\build\package-release.ps1
+```
 
-Pull requests are welcome.  
-Before submitting, please ensure:
+That script restores packages, builds `Release|x64`, stages a clean runtime folder, and creates a ZIP under `dist/`.
 
-* The solution builds with **C# 7.3 / .NET Framework 4.8**.
-* New code uses the existing logging (`LogService`) instead of `Console.WriteLine`.
-* UI strings are written in English; localisation can be discussed separately.
+## Typical Workflow
 
-Areas that could use help:
+1. Add a device for Modbus TCP, Modbus RTU, or Siemens S7.
+2. Add one or more points under that device.
+3. Add measurements under each point.
+4. Use connection validation or test connection actions where available in the admin workflow.
+5. Start monitoring.
+6. Watch the latest values on the dashboard.
+7. Open the history page to load recent archived samples.
 
-* Additional protocol readers (OPC UA, BACnet, MQTT ⟶ SQL bridge).
-* UX refinements, dark theme, high‑DPI tweaks.
-* Performance profiling when polling thousands of points.
+## Runtime Layout
 
----
+```text
+IOBusMonitor.exe
+Settings/Settings.db      # persistent app settings and configured devices/points/measurements
+Data/Data_yyyyMMdd.db     # one SQLite archive per day
+Logs/                     # optional diagnostic logs
+```
 
-## 8  License
+## Current Limitations
 
-This project is licensed under the MIT License – see **LICENSE** for details.
+- Windows desktop application only; this repository does not claim Linux or WSL runtime support for the WPF app.
+- Documentation currently reflects read-only monitoring behavior. Output writing/control is not documented as supported.
+- The app is intended for local monitoring and troubleshooting, not plant-wide supervisory control.
+- Automated tests cover core library logic, not WPF rendering or real hardware communication.
+- Screenshots were intentionally removed here because the shell/dashboard UI changed and the older images no longer represent the current interface.
 
+## Demo Mode
+
+- Demo mode is clearly marked in the shell with a `DEMO MODE` badge.
+- While demo mode is enabled, the timer service does not poll real network or serial devices.
+- Demo values are written into the normal SQLite archive path so dashboard and history workflows can be evaluated without hardware.
+- `Reset Demo Sample Data` recreates demo configuration and clears previously generated demo archive rows for demo-named devices.
+
+## Support Model
+
+The codebase is MIT licensed and public. The repository is suitable for free issue-based collaboration and for paid custom integration or deployment work.
+
+Use GitHub Issues for:
+
+- reproducible bugs,
+- build failures,
+- documentation errors,
+- feature proposals,
+- protocol compatibility reports.
+
+For support boundaries and custom-work examples, see [SUPPORT.md](SUPPORT.md).
+
+## Contact
+
+- Bug reports and documentation issues: use [GitHub Issues](https://github.com/Vanderhell/IOBusMonitor/issues)
+- Paid/custom work examples: see [docs/SERVICES.md](docs/SERVICES.md)
+- Public paid-support email or website is not published in this repository at the moment
+
+## Repository Presentation Notes
+
+- CI badge reflects the real `windows-ci` GitHub Actions workflow in this repository.
+- License badge reflects the repository license.
+- No release badge is shown because a verified public release asset was not confirmed in this task.
+
+## License
+
+MIT. See [LICENSE](LICENSE).

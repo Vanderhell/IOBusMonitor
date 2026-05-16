@@ -1,8 +1,7 @@
-﻿using HandyControl.Controls;
+﻿using HC = HandyControl.Controls;
 using IOBusMonitorLib;
 using System.ComponentModel;
 using System.Windows;
-using System.Windows.Input;
 
 namespace IOBusMonitor
 {
@@ -15,14 +14,12 @@ namespace IOBusMonitor
         {
             InitializeComponent();
 
-            // Attach view-model
             var vm = new MainViewModel(MainContentFrame);
             DataContext = vm;
             vm.PropertyChanged += MainViewModel_PropertyChanged;
 
             UpdateTrayMenuItems();
 
-            // Select initial page after load
             Loaded += (s, e) =>
             {
                 var settings = new SettingsService().LoadSettings();
@@ -38,17 +35,8 @@ namespace IOBusMonitor
                 }
             };
 
-
-            TestDataGenerator.GenerateTestData();
         }
 
-        // Drag window by empty area
-        private void Grid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ChangedButton == MouseButton.Left) DragMove();
-        }
-
-        // Re-enable / disable Start & Stop in tray menu
         private void MainViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(MainViewModel.IsMonitoring))
@@ -62,21 +50,19 @@ namespace IOBusMonitor
 
             var startItem = contextMenu.Items[1] as System.Windows.Controls.MenuItem;
             var stopItem = contextMenu.Items[2] as System.Windows.Controls.MenuItem;
-
             bool isRunning = (DataContext as MainViewModel)?.IsMonitoring ?? false;
 
             if (startItem != null) startItem.IsEnabled = !isRunning;
             if (stopItem != null) stopItem.IsEnabled = isRunning;
         }
 
-        // Tray-menu handlers
         private void ShowMainWindow_Click(object _, RoutedEventArgs __)
         {
             if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal;
 
             Show();
             Activate();
-            Topmost = true;  // bring to front
+            Topmost = true;
             Topmost = false;
         }
 
@@ -88,7 +74,7 @@ namespace IOBusMonitor
 
         private void Exit_Click(object _, RoutedEventArgs __)
         {
-            var res = System.Windows.MessageBox.Show(this,
+            var res = MessageBox.Show(this,
                 "Are you sure you want to exit?", "Confirm exit",
                 MessageBoxButton.YesNo, MessageBoxImage.Question);
 
@@ -99,14 +85,13 @@ namespace IOBusMonitor
             }
         }
 
-        // Override close – minimise to tray instead
         protected override void OnClosing(CancelEventArgs e)
         {
             if (!Application.Current.ShutdownMode.Equals(ShutdownMode.OnExplicitShutdown))
             {
                 e.Cancel = true;
                 Hide();
-                Growl.InfoGlobal("The application continues to run in the tray.");
+                HC.Growl.InfoGlobal("The application continues to run in the tray.");
             }
             else
             {
@@ -117,7 +102,7 @@ namespace IOBusMonitor
         private void MinimizeToTray_Click(object _, RoutedEventArgs __)
         {
             Hide();
-            Growl.InfoGlobal("The application is running in the tray.");
+            HC.Growl.InfoGlobal("The application is running in the tray.");
         }
     }
 }
