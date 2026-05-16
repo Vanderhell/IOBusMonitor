@@ -40,7 +40,7 @@ function Copy-FilteredTree {
         }
 
         $segments = $relativePath.Split('\')
-        if (($segments | Where-Object { $excludedDirectories -contains $_ }).Count -gt 0) {
+        if ($segments | Where-Object { $excludedDirectories -contains $_ }) {
             return
         }
 

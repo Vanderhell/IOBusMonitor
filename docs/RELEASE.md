@@ -44,7 +44,7 @@ This additionally copies local `Settings`, `Data`, and `Logs` folders into the s
 The automated release flow lives in [`.github/workflows/release.yml`](../.github/workflows/release.yml).
 
 - Push a tag such as `v1.0.0`
-- GitHub Actions restores packages, builds `Release|x64`, and runs `build/package-release.ps1 -GenerateChecksum`
+- GitHub Actions restores packages, builds `Release|x64`, runs the test project, and then runs `build/package-release.ps1 -GenerateChecksum`
 - The workflow creates a GitHub Release and uploads the ZIP plus SHA-256 file
 - You can also run the workflow manually from the Actions tab with `workflow_dispatch`
 
