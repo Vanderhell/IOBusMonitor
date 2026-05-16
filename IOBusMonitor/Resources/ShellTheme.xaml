@@ -43,6 +43,12 @@
         <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
 
+    <Style x:Key="ShellLabelStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource ShellBrush.Text}" />
+    </Style>
+
     <Style x:Key="ShellNavButtonStyle" TargetType="Button">
         <Setter Property="Foreground" Value="White" />
         <Setter Property="Background" Value="Transparent" />
@@ -125,6 +131,45 @@
         <Setter Property="BorderBrush" Value="{StaticResource ShellBrush.Border}" />
     </Style>
 
+    <Style x:Key="ShellToggleButtonStyle" TargetType="ToggleButton">
+        <Setter Property="Foreground" Value="{StaticResource ShellBrush.Text}" />
+        <Setter Property="Background" Value="{StaticResource ShellBrush.SurfaceAlt}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ShellBrush.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="12,7" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Chrome"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8">
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Opacity" Value="0.92" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter Property="Foreground" Value="White" />
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource ShellBrush.Primary}" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource ShellBrush.Primary}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Chrome" Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="ShellPositiveButtonStyle" TargetType="Button" BasedOn="{StaticResource ShellActionButtonStyle}">
         <Setter Property="Background" Value="#FF3E7A3E" />
         <Setter Property="BorderBrush" Value="#FF3E7A3E" />
@@ -140,6 +185,37 @@
         <Setter Property="BorderBrush" Value="{StaticResource ShellBrush.Border}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="10" />
+    </Style>
+
+    <Style x:Key="ShellPanelCardStyle" TargetType="Border" BasedOn="{StaticResource ShellCardStyle}">
+        <Setter Property="Padding" Value="18" />
+    </Style>
+
+    <Style x:Key="ShellNoticeCardStyle" TargetType="Border" BasedOn="{StaticResource ShellCardStyle}">
+        <Setter Property="Background" Value="#FFF6FBFF" />
+        <Setter Property="BorderBrush" Value="#FFB8D8EF" />
+        <Setter Property="Padding" Value="14" />
+    </Style>
+
+    <Style x:Key="ShellSidebarNoteStyle" TargetType="Border">
+        <Setter Property="Background" Value="#12FFFFFF" />
+        <Setter Property="BorderBrush" Value="#24FFFFFF" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="14" />
+    </Style>
+
+    <Style x:Key="ShellBadgeStyle" TargetType="Border">
+        <Setter Property="Padding" Value="10,4" />
+        <Setter Property="CornerRadius" Value="999" />
+        <Setter Property="Background" Value="#FFFCE3B4" />
+        <Setter Property="BorderBrush" Value="#FFE0B24E" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style x:Key="ShellMetricCardStyle" TargetType="Border" BasedOn="{StaticResource ShellCardStyle}">
+        <Setter Property="Background" Value="{StaticResource ShellBrush.SurfaceAlt}" />
+        <Setter Property="Padding" Value="16,12" />
     </Style>
 
     <Style x:Key="ShellDataGridStyle" TargetType="DataGrid">
@@ -159,5 +235,18 @@
         <Setter Property="AlternatingRowBackground" Value="#FFF8FAFC" />
         <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource ShellBrush.Border}" />
         <Setter Property="VerticalGridLinesBrush" Value="{StaticResource ShellBrush.Border}" />
+    </Style>
+
+    <Style x:Key="ShellListBoxStyle" TargetType="ListBox">
+        <Setter Property="Background" Value="{StaticResource ShellBrush.Surface}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ShellBrush.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="6" />
+    </Style>
+
+    <Style x:Key="ShellCheckBoxStyle" TargetType="CheckBox">
+        <Setter Property="Foreground" Value="{StaticResource ShellBrush.Text}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Margin" Value="0,0,0,8" />
     </Style>
 </ResourceDictionary>

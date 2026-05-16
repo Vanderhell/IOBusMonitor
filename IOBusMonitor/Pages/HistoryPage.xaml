@@ -11,8 +11,7 @@
         </Grid.ColumnDefinitions>
 
         <Border Grid.Column="0"
-                Style="{StaticResource ShellCardStyle}"
-                Padding="18"
+                Style="{StaticResource ShellPanelCardStyle}"
                 Margin="0,0,16,0">
             <StackPanel>
                 <TextBlock Text="History Explorer" Style="{StaticResource ShellPageTitleStyle}"/>
@@ -22,13 +21,12 @@
 
                 <TextBlock Text="Points"
                            Margin="0,22,0,8"
-                           FontSize="14"
-                           FontWeight="SemiBold"/>
+                           Style="{StaticResource ShellLabelStyle}"/>
                 <ListBox ItemsSource="{Binding AllPoints}"
+                         Style="{StaticResource ShellListBoxStyle}"
                          SelectedItem="{Binding SelectedPoint}"
                          DisplayMemberPath="PointName"
-                         Height="320"
-                         BorderBrush="{StaticResource ShellBrush.Border}"/>
+                         Height="320"/>
 
                 <Button Content="Load History"
                         Command="{Binding LoadHistoryCommand}"
@@ -37,8 +35,7 @@
 
                 <TextBlock Text="Measurements"
                            Margin="0,22,0,8"
-                           FontSize="14"
-                           FontWeight="SemiBold"/>
+                           Style="{StaticResource ShellLabelStyle}"/>
 
                 <ScrollViewer VerticalScrollBarVisibility="Auto"
                               MaxHeight="260">
@@ -46,7 +43,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <CheckBox Content="{Binding Name}"
-                                          Margin="0,0,0,8"
+                                          Style="{StaticResource ShellCheckBoxStyle}"
                                           IsChecked="{Binding IsVisible, Mode=TwoWay}"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -56,7 +53,7 @@
         </Border>
 
         <Border Grid.Column="1"
-                Style="{StaticResource ShellCardStyle}"
+                Style="{StaticResource ShellPanelCardStyle}"
                 Padding="16">
             <Grid>
                 <Grid.RowDefinitions>

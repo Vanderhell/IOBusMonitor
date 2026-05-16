@@ -10,11 +10,7 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0"
-                Background="{StaticResource ShellBrush.Surface}"
-                BorderBrush="{StaticResource ShellBrush.Border}"
-                BorderThickness="1"
-                CornerRadius="10"
-                Padding="16"
+                Style="{StaticResource ShellPanelCardStyle}"
                 Margin="0,0,0,14">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -48,25 +44,15 @@
 
         <Grid Grid.Row="1">
             <DataGrid ItemsSource="{Binding FilteredRows}"
+                      Style="{StaticResource ShellDataGridStyle}"
                       AutoGenerateColumns="False"
-                      CanUserAddRows="False"
-                      CanUserDeleteRows="False"
-                      CanUserResizeRows="False"
-                      HeadersVisibility="Column"
                       IsReadOnly="True"
-                      GridLinesVisibility="Horizontal"
-                      RowHeaderWidth="0"
-                      SelectionMode="Single"
-                      SelectionUnit="FullRow"
                       EnableRowVirtualization="True"
                       EnableColumnVirtualization="True"
                       VirtualizingPanel.IsVirtualizing="True"
                       VirtualizingPanel.VirtualizationMode="Recycling"
                       ScrollViewer.CanContentScroll="True"
-                      ScrollViewer.IsDeferredScrollingEnabled="True"
-                      Background="{StaticResource ShellBrush.Surface}"
-                      BorderBrush="{StaticResource ShellBrush.Border}"
-                      BorderThickness="1">
+                      ScrollViewer.IsDeferredScrollingEnabled="True">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="110"/>
                     <DataGridTextColumn Header="Device" Binding="{Binding Device}" Width="180"/>
@@ -79,28 +65,25 @@
                     <DataGridTemplateColumn Header="Chart" Width="70">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Button Width="34"
+                                <Button Width="58"
                                         Height="28"
                                         Padding="0"
-                                        FontSize="14"
+                                        FontSize="12"
+                                        Style="{StaticResource ShellSecondaryButtonStyle}"
                                         Command="{Binding ShowGraphCommand}"
                                         ToolTip="Open chart"
-                                        Content="Chart"/>
+                                        Content="Open"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
 
-            <Border Background="#F7F9FB"
-                    BorderBrush="{StaticResource ShellBrush.Border}"
-                    BorderThickness="1"
-                    CornerRadius="10"
-                    Padding="28"
+            <Border Padding="28"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center">
                 <Border.Style>
-                    <Style TargetType="Border">
+                    <Style TargetType="Border" BasedOn="{StaticResource ShellPanelCardStyle}">
                         <Setter Property="Visibility" Value="Collapsed"/>
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding FilteredRows.IsEmpty}" Value="True">

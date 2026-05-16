@@ -33,9 +33,9 @@
 
                 <ToggleButton DockPanel.Dock="Right"
                               Content="Live Update"
+                              Style="{StaticResource ShellToggleButtonStyle}"
                               IsChecked="{Binding IsLiveTracking, Mode=TwoWay}"
                               ToolTip="Enable or disable automatic plot refresh"
-                              Padding="12,6"
                               Margin="12,0,0,0"
                               VerticalAlignment="Center"/>
             </DockPanel>
@@ -61,43 +61,12 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <ToggleButton Content="{Binding Name}"
+                                              Style="{StaticResource ShellToggleButtonStyle}"
                                               IsChecked="{Binding IsVisible, Mode=TwoWay}"
                                               Checked="CheckBox_Checked"
                                               Unchecked="CheckBox_Checked"
-                                              FontSize="14"
-                                              Padding="10,8"
                                               Margin="0,0,0,8"
-                                              BorderThickness="1"
-                                              HorizontalAlignment="Stretch">
-                                    <ToggleButton.Style>
-                                        <Style TargetType="ToggleButton">
-                                            <Setter Property="Background" Value="{StaticResource ShellBrush.Primary}"/>
-                                            <Setter Property="Foreground" Value="White"/>
-                                            <Setter Property="BorderBrush" Value="{StaticResource ShellBrush.Primary}"/>
-                                            <Setter Property="Cursor" Value="Hand"/>
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="ToggleButton">
-                                                        <Border Background="{TemplateBinding Background}"
-                                                                BorderBrush="{TemplateBinding BorderBrush}"
-                                                                BorderThickness="{TemplateBinding BorderThickness}"
-                                                                CornerRadius="8">
-                                                            <ContentPresenter HorizontalAlignment="Center"
-                                                                              VerticalAlignment="Center"/>
-                                                        </Border>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                            <Style.Triggers>
-                                                <Trigger Property="IsChecked" Value="False">
-                                                    <Setter Property="Background" Value="{StaticResource ShellBrush.SurfaceAlt}"/>
-                                                    <Setter Property="Foreground" Value="{StaticResource ShellBrush.Text}"/>
-                                                    <Setter Property="BorderBrush" Value="{StaticResource ShellBrush.Border}"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </ToggleButton.Style>
-                                </ToggleButton>
+                                              HorizontalAlignment="Stretch"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

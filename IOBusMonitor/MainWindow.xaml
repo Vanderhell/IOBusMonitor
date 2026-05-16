@@ -81,7 +81,7 @@
                     </StackPanel>
                 </ScrollViewer>
 
-                <Border Grid.Row="2" Background="#12FFFFFF" BorderBrush="#24FFFFFF" BorderThickness="1" CornerRadius="10" Padding="14">
+                <Border Grid.Row="2" Style="{StaticResource ShellSidebarNoteStyle}">
                     <StackPanel>
                         <TextBlock Text="{Binding MonitoringStateText}" FontSize="15" FontWeight="SemiBold" Foreground="White"/>
                         <TextBlock Text="Closing hides the app to tray. Use Exit to shut it down." Margin="0,6,0,0" FontSize="12" Foreground="#B3FFFFFF" TextWrapping="Wrap"/>
@@ -97,20 +97,15 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <Border Grid.Row="0" Style="{StaticResource ShellCardStyle}" Padding="18,16" Margin="0,0,0,16">
+            <Border Grid.Row="0" Style="{StaticResource ShellPanelCardStyle}" Padding="18,16" Margin="0,0,0,16">
                 <StackPanel>
                     <DockPanel LastChildFill="False">
                         <StackPanel DockPanel.Dock="Left">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Operations Console" FontSize="26" FontWeight="Bold" VerticalAlignment="Center"/>
-                                <Border Margin="12,2,0,0"
-                                        Padding="10,4"
-                                        CornerRadius="999"
-                                        Background="#FFFCE3B4"
-                                        BorderBrush="#FFE0B24E"
-                                        BorderThickness="1">
+                                <TextBlock Text="Operations Console" Style="{StaticResource ShellPageTitleStyle}" VerticalAlignment="Center"/>
+                                <Border Margin="12,2,0,0">
                                     <Border.Style>
-                                        <Style TargetType="Border">
+                                        <Style TargetType="Border" BasedOn="{StaticResource ShellBadgeStyle}">
                                             <Setter Property="Visibility" Value="Collapsed"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsDemoModeEnabled}" Value="True">
@@ -132,14 +127,9 @@
                         </StackPanel>
                     </DockPanel>
 
-                    <Border Margin="0,14,0,0"
-                            Padding="14"
-                            CornerRadius="10"
-                            Background="#FFF6FBFF"
-                            BorderBrush="#FFB8D8EF"
-                            BorderThickness="1">
+                    <Border Margin="0,14,0,0">
                         <Border.Style>
-                            <Style TargetType="Border">
+                            <Style TargetType="Border" BasedOn="{StaticResource ShellNoticeCardStyle}">
                                 <Setter Property="Visibility" Value="Collapsed"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding ShowEnableDemoPrompt}" Value="True">
@@ -166,7 +156,7 @@
                 <Frame x:Name="MainContentFrame" NavigationUIVisibility="Hidden" BorderBrush="{x:Null}"/>
             </Border>
 
-            <Border Grid.Row="2" Background="{StaticResource ShellBrush.SurfaceAlt}" BorderBrush="{StaticResource ShellBrush.Border}" BorderThickness="1" CornerRadius="10" Padding="16,12" Margin="0,16,0,0">
+            <Border Grid.Row="2" Style="{StaticResource ShellMetricCardStyle}" Margin="0,16,0,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2*"/>
