@@ -36,6 +36,24 @@ namespace IOBusMonitor
                 return;
             }
 
+            if (ScreenshotCapture.TryParseArgs(e.Args, out var options))
+            {
+                ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+                // Run without the splash screen to make automation deterministic.
+                Dispatcher.Invoke(() =>
+                {
+                    MainWindow = new MainWindow();
+                    MainWindow.Show();
+                });
+
+                ScreenshotCapture.RunAsync((MainWindow)MainWindow, options)
+                    .ContinueWith(_ => Dispatcher.Invoke(Shutdown));
+
+                base.OnStartup(e);
+                return;
+            }
+
             // Show splash screen while heavy initialization runs.
             var splash = new SplashScreen();
             splash.Show();

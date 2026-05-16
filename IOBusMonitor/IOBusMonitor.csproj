@@ -158,6 +158,7 @@
     <Compile Include="Converter\InverseBoolConverter.cs" />
     <Compile Include="InstanceManager.cs" />
     <Compile Include="AppVersionProvider.cs" />
+    <Compile Include="ScreenshotCapture.cs" />
     <Compile Include="Admin\AdminWorkflowService.cs" />
     <Compile Include="Pages\AboutApp.xaml.cs">
       <DependentUpon>AboutApp.xaml</DependentUpon>

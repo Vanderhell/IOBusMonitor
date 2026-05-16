@@ -53,6 +53,18 @@ The current documented workflow is read-oriented monitoring and local logging.
 - Demo mode that seeds sample configuration and generates synthetic live values locally
 - Portable packaging script for clean `Release|x64` ZIP creation
 
+## Screenshots
+
+PNG assets (1600x900) live in `docs/assets/screenshots/`:
+
+- Home / Overview: [docs/assets/screenshots/home-overview.png](docs/assets/screenshots/home-overview.png)
+- Dashboard: [docs/assets/screenshots/dashboard.png](docs/assets/screenshots/dashboard.png)
+- History: [docs/assets/screenshots/history.png](docs/assets/screenshots/history.png)
+- Settings: [docs/assets/screenshots/settings.png](docs/assets/screenshots/settings.png)
+- Modbus TCP admin: [docs/assets/screenshots/modbus-tcp-admin.png](docs/assets/screenshots/modbus-tcp-admin.png)
+- Modbus RTU admin: [docs/assets/screenshots/modbus-rtu-admin.png](docs/assets/screenshots/modbus-rtu-admin.png)
+- Siemens S7 admin: [docs/assets/screenshots/siemens-s7-admin.png](docs/assets/screenshots/siemens-s7-admin.png)
+
 ## Quick Links
 
 - Getting started: [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)
@@ -125,7 +137,7 @@ Logs/                     # optional diagnostic logs
 - Documentation currently reflects read-only monitoring behavior. Output writing/control is not documented as supported.
 - The app is intended for local monitoring and troubleshooting, not plant-wide supervisory control.
 - Automated tests cover core library logic, not WPF rendering or real hardware communication.
-- Screenshots were intentionally removed here because the shell/dashboard UI changed and the older images no longer represent the current interface.
+- The README links to up-to-date screenshots under `docs/assets/screenshots/`.
 
 ## Demo Mode
 

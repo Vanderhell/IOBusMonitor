@@ -56,6 +56,7 @@ dkms.conf
 **/bin/
 **/obj/
 /.vs
+**/.vs/
 /packages
 /dist
 *.user
