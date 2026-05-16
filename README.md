@@ -63,6 +63,8 @@ The current documented workflow is read-oriented monitoring and local logging.
 - Release packaging: [docs/RELEASE.md](docs/RELEASE.md)
 - Services: [docs/SERVICES.md](docs/SERVICES.md)
 - Testing notes: [docs/TESTING.md](docs/TESTING.md)
+- Contributing: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Security policy: [SECURITY.md](SECURITY.md)
 - Support model: [SUPPORT.md](SUPPORT.md)
 
 ## Start Here
@@ -143,6 +145,8 @@ Use GitHub Issues for:
 - documentation errors,
 - feature proposals,
 - protocol compatibility reports.
+
+The repository has dedicated issue templates for bugs and feature requests under `.github/ISSUE_TEMPLATE/`.
 
 For support boundaries and custom-work examples, see [SUPPORT.md](SUPPORT.md).
 
