@@ -52,4 +52,17 @@ jobs:
           }
 
           if (-not $vstest) { throw "vstest.console.exe not found" }
-          & $vstest .\IOBusMonitorLib.Tests\bin\Debug\net472\IOBusMonitorLib.Tests.dll
+
+          $testDllCandidates = @(
+            ".\IOBusMonitorLib.Tests\bin\Debug\IOBusMonitorLib.Tests.dll",
+            ".\IOBusMonitorLib.Tests\bin\Debug\net472\IOBusMonitorLib.Tests.dll",
+            ".\IOBusMonitorLib.Tests\bin\Release\IOBusMonitorLib.Tests.dll",
+            ".\IOBusMonitorLib.Tests\bin\Release\net472\IOBusMonitorLib.Tests.dll"
+          )
+
+          $testDll = $testDllCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $testDll) {
+            throw "IOBusMonitorLib.Tests.dll not found in any expected output folder."
+          }
+
+          & $vstest $testDll
